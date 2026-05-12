@@ -1,0 +1,39 @@
+{
+  "name": "guia-chapada-veadeiros-2026",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "frontend/cliente",
+    "frontend/admin",
+    "api",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:cliente": "npm run dev -w @guia/frontend-cliente",
+    "dev:admin": "npm run dev -w @guia/frontend-admin",
+    "dev:api": "npm run dev -w @guia/api",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "db:generate": "npm run db:generate -w @guia/api",
+    "db:migrate": "npm run db:migrate -w @guia/api",
+    "db:studio": "npm run db:studio -w @guia/api",
+    "seed": "npm run seed -w @guia/api",
+    "db:test": "node scripts/test-db.mjs",
+    "wp:test": "node scripts/test-wp-db.mjs",
+    "r2:test": "node scripts/r2-smoke-test.mjs",
+    "migrate:wp": "node scripts/migrate-wordpress.mjs",
+    "fix:image-urls": "node scripts/fix-public-image-urls.mjs"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.0.0",
+    "dotenv": "^16.0.0",
+    "mysql2": "^3.0.0",
+    "sharp": "^0.33.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+}
+
+enum PublishStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum SeoEntityType {
+  POST
+  PAGE
+  PRODUCT
+  CATEGORY
+  TAG
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String?
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         UserRole @default(EDITOR)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  posts        Post[]
+
+  @@map("users")
+}
+
+model Post {
+  id             Int           @id @default(autoincrement())
+  title          String
+  slug           String        @unique
+  excerpt        String?       @db.Text
+  content        String        @db.LongText
+  featuredImage  String?       @map("featured_image")
+  seoTitle       String?       @map("seo_title")
+  seoDescription String?       @db.Text @map("seo_description")
+  status         PublishStatus @default(DRAFT)
+  authorId       Int?          @map("author_id")
+  publishedAt    DateTime?     @map("published_at")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  author         User?         @relation(fields: [authorId], references: [id])
+  categories     Category[]    @relation("PostCategories")
+  tags           Tag[]         @relation("PostTags")
+
+  @@index([slug])
+  @@index([status, publishedAt])
+  @@map("posts")
+}
+
+model Page {
+  id             Int           @id @default(autoincrement())
+  title          String
+  slug           String        @unique
+  excerpt        String?       @db.Text
+  content        String        @db.LongText
+  featuredImage  String?       @map("featured_image")
+  seoTitle       String?       @map("seo_title")
+  seoDescription String?       @db.Text @map("seo_description")
+  status         PublishStatus @default(DRAFT)
+  publishedAt    DateTime?     @map("published_at")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  @@index([slug])
+  @@map("pages")
+}
+
+model Product {
+  id               Int           @id @default(autoincrement())
+  title            String
+  slug             String        @unique
+  description      String        @db.LongText
+  shortDescription String?       @db.Text @map("short_description")
+  featuredImage    String?       @map("featured_image")
+  price            Decimal?      @db.Decimal(10, 2)
+  seoTitle         String?       @map("seo_title")
+  seoDescription   String?       @db.Text @map("seo_description")
+  status           PublishStatus @default(DRAFT)
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  categories       Category[]    @relation("ProductCategories")
+  tags             Tag[]         @relation("ProductTags")
+
+  @@index([slug])
+  @@map("products")
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String
+  slug        String    @unique
+  description String?   @db.Text
+  parentId    Int?      @map("parent_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  parent      Category? @relation("CategoryTree", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryTree")
+  posts       Post[]    @relation("PostCategories")
+  products    Product[] @relation("ProductCategories")
+
+  @@index([slug])
+  @@map("categories")
+}
+
+model Tag {
+  id        Int       @id @default(autoincrement())
+  name      String
+  slug      String    @unique
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  posts     Post[]    @relation("PostTags")
+  products  Product[] @relation("ProductTags")
+
+  @@index([slug])
+  @@map("tags")
+}
+
+model Media {
+  id        Int      @id @default(autoincrement())
+  title     String?
+  alt       String?
+  url       String   @db.Text
+  key       String   @unique
+  width     Int?
+  height    Int?
+  mimeType  String   @map("mime_type")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("media")
+}
+
+model SeoMetadata {
+  id             Int           @id @default(autoincrement())
+  entityType     SeoEntityType @map("entity_type")
+  entityId       Int           @map("entity_id")
+  seoTitle       String?       @map("seo_title")
+  seoDescription String?       @db.Text @map("seo_description")
+  canonicalUrl   String?       @db.Text @map("canonical_url")
+  ogImage        String?       @db.Text @map("og_image")
+  robots         String?
+
+  @@unique([entityType, entityId])
+  @@map("seo_metadata")
+}
+
+model Redirect {
+  id         Int      @id @default(autoincrement())
+  oldUrl     String   @unique @map("old_url")
+  newUrl     String   @map("new_url")
+  statusCode Int      @default(301) @map("status_code")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("redirects")
+}
+
+model Setting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String   @db.LongText
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}

@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+build/
+.vite/
+.turbo/
+coverage/
+*.log
+*.sql
+*.zip
+*.tar
+*.tar.gz
+uploads/*
+!uploads/.gitkeep
+api/prisma/migrations/dev.db
