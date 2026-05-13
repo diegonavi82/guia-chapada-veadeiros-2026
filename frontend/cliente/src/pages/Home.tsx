@@ -38,7 +38,7 @@ const HERO_SLIDES: HeroSlide[] = [
     cta: { kind: "whatsapp", label: "Whatsapp" },
   },
   {
-    image: Wp.almecegas,
+    image: Wp.heroSlideEmBreve,
     badge: "Em breve",
     title: "Seu próximo destino começará aqui",
     lead:
