@@ -229,17 +229,64 @@ function stripHtmlTags(s: string) {
   return s.replace(/<[^>]+>/g, "");
 }
 
+/** Converte blocos HTML típicos do WP em quebras de linha antes de tirar as tags (evita um único <p> gigante). */
+function htmlSidebarToPlainWithBreaks(sidebarInfo: string) {
+  return sidebarInfo
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<p\b[^>]*>/gi, "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/div>/gi, "\n")
+    .replace(/<div\b[^>]*>/gi, "")
+    .replace(/<\/li>/gi, "\n")
+    .replace(/<li\b[^>]*>/gi, "\n")
+    .replace(/<\/h[1-6]>/gi, "\n");
+}
+
 function getSidebarLines(sidebarInfo: string) {
-  const plain = stripHtmlTags(sidebarInfo).trim();
+  const plain = stripHtmlTags(htmlSidebarToPlainWithBreaks(sidebarInfo)).trim();
 
   if (!plain) {
     return [];
   }
 
   return plain
-    .split(/\n{2,}/)
-    .map((block) => block.replace(/\n+/g, " ").trim())
+    .split(/\n+/)
+    .map((block) => block.replace(/[ \t]+/g, " ").trim())
     .filter(Boolean);
+}
+
+function SidebarInfoLine({ line }: { line: string }) {
+  const trimmed = line.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  if (trimmed.startsWith("-")) {
+    return <p>{trimmed}</p>;
+  }
+
+  const sep = trimmed.indexOf(": ");
+  if (sep !== -1) {
+    const label = trimmed.slice(0, sep + 1);
+    const rest = trimmed.slice(sep + 2).trim();
+    return (
+      <p>
+        <span className="gcv-detail-info-label">{label}</span>
+        {rest ? ` ${rest}` : ""}
+      </p>
+    );
+  }
+
+  if (trimmed.endsWith(":")) {
+    return (
+      <p>
+        <span className="gcv-detail-info-label">{trimmed}</span>
+      </p>
+    );
+  }
+
+  return <p>{trimmed}</p>;
 }
 
 export function DynamicPage() {
@@ -324,18 +371,9 @@ export function DynamicPage() {
                 ) : null}
                 {sidebarLines.length > 0 ? (
                   <div className="gcv-detail-info">
-                    {sidebarLines.map((line, index) => {
-                      const isHeading = line.endsWith(":") || (!line.startsWith("-") && index === 0);
-
-                      return (
-                        <p
-                          key={`${line}-${index}`}
-                          className={isHeading ? "gcv-detail-info-heading" : undefined}
-                        >
-                          {line}
-                        </p>
-                      );
-                    })}
+                    {sidebarLines.map((line, index) => (
+                      <SidebarInfoLine key={`${index}-${line.slice(0, 48)}`} line={line} />
+                    ))}
                   </div>
                 ) : null}
                 {page.excerpt ? <p className="gcv-detail-excerpt">{page.excerpt}</p> : null}

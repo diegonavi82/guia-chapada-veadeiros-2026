@@ -383,6 +383,11 @@ img {
   margin-bottom: 0;
 }
 
+.gcv-detail-info-label {
+  color: #17264b;
+  font-weight: 900;
+}
+
 .gcv-detail-info-heading {
   color: #17264b !important;
   font-weight: 900;

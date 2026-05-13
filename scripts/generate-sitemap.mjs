@@ -6,7 +6,7 @@ import mysql from "mysql2/promise";
 dotenv.config();
 
 const siteUrl = (process.env.CLIENTE_BASE_URL ?? "https://guiadachapadaveadeiros.com").replace(/\/$/, "");
-const staticRoutes = ["/", "/blog", "/atrativos", "/passeios", "/faq", "/contato", "/busca"];
+const staticRoutes = ["/", "/blog", "/atrativos", "/faq", "/contato", "/busca"];
 const publicDir = path.resolve("frontend/cliente/public");
 
 async function getDynamicRoutes() {

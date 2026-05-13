@@ -794,7 +794,7 @@ export function Home() {
               </div>
               <Link
                 className="shrink-0 text-xs font-extrabold uppercase tracking-[0.12em] text-cerrado-700 transition hover:text-[#df8350]"
-                to="/cachoeiras-chapada-dos-veadeiros"
+                to="/atrativos"
               >
                 Ver Todas
               </Link>

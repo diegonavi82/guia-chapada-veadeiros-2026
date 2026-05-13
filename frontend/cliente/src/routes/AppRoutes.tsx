@@ -1,10 +1,12 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import { SiteLayout } from "../layouts/SiteLayout";
 import { Article } from "../pages/Article";
+import { Attractions } from "../pages/Attractions";
 import { Blog } from "../pages/Blog";
 import { Contact } from "../pages/Contact";
 import { DynamicPage } from "../pages/DynamicPage";
 import { Home } from "../pages/Home";
+import { ProductDetail } from "../pages/ProductDetail";
 import { StaticPage } from "../pages/StaticPage";
 
 export const router = createBrowserRouter([
@@ -14,18 +16,9 @@ export const router = createBrowserRouter([
       { path: "/", element: <Home /> },
       { path: "/blog", element: <Blog /> },
       { path: "/blog/:slug", element: <Article /> },
-      {
-        path: "/atrativos",
-        element: (
-          <StaticPage title="Atrativos" description="Cachoeiras, trilhas, mirantes e experiencias imperdiveis." />
-        ),
-      },
-      {
-        path: "/passeios",
-        element: (
-          <StaticPage title="Passeios" description="Produtos e roteiros migrados do WooCommerce." />
-        ),
-      },
+      { path: "/atrativos", element: <Attractions /> },
+      { path: "/passeios", element: <Navigate to="/atrativos" replace /> },
+      { path: "/passeios/:slug", element: <ProductDetail /> },
       {
         path: "/faq",
         element: (

@@ -53,6 +53,35 @@ export async function listPages() {
   });
 }
 
+/** Listagem leve para o site: páginas + produtos (sem HTML longo). */
+export async function listAttractionsCatalog() {
+  const [pages, products] = await Promise.all([
+    prisma.page.findMany({
+      where: { status: "PUBLISHED" },
+      select: {
+        slug: true,
+        title: true,
+        excerpt: true,
+        featuredImage: true,
+      },
+      orderBy: { title: "asc" },
+    }),
+    prisma.product.findMany({
+      where: { status: "PUBLISHED" },
+      select: {
+        slug: true,
+        title: true,
+        shortDescription: true,
+        featuredImage: true,
+        price: true,
+      },
+      orderBy: { title: "asc" },
+    }),
+  ]);
+
+  return { pages, products };
+}
+
 export async function getPageBySlug(request: FastifyRequest) {
   const params = z.object({ slug: z.string().min(1) }).parse(request.params);
 
@@ -69,6 +98,15 @@ export async function listProducts(request: FastifyRequest) {
     orderBy: { createdAt: "desc" },
     skip: (query.page - 1) * query.perPage,
     take: query.perPage,
+    include: { categories: true, tags: true },
+  });
+}
+
+export async function getProductBySlug(request: FastifyRequest) {
+  const params = z.object({ slug: z.string().min(1) }).parse(request.params);
+
+  return prisma.product.findFirstOrThrow({
+    where: { slug: params.slug, status: "PUBLISHED" },
     include: { categories: true, tags: true },
   });
 }

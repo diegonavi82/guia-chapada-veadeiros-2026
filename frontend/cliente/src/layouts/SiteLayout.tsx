@@ -4,7 +4,6 @@ import { wpUploadsAssets } from "../config/wpUploadsAssets";
 const navItems = [
   ["Fale Conosco", "/contato"],
   ["Atrativos", "/atrativos"],
-  ["Passeios", "/passeios"],
   ["Blog", "/blog"],
 ];
 

@@ -3,6 +3,8 @@ import { postContact } from "../controllers/contact.controller.js";
 import {
   getPageBySlug,
   getPostBySlug,
+  getProductBySlug,
+  listAttractionsCatalog,
   listCategories,
   listPages,
   listPosts,
@@ -17,7 +19,9 @@ export async function publicRoutes(app: FastifyInstance) {
   app.get("/posts/:slug", getPostBySlug);
   app.get("/pages", listPages);
   app.get("/pages/:slug", getPageBySlug);
+  app.get("/catalog/attractions", listAttractionsCatalog);
   app.get("/products", listProducts);
+  app.get("/products/:slug", getProductBySlug);
   app.get("/categories", listCategories);
   app.get("/instagram/media", listInstagramMedia);
 }
