@@ -4,8 +4,10 @@ Este arquivo fica versionado no repositório e serve como lembrete de backlog en
 
 ## To do
 
-1. **Configurar o Instagram**: preencher `INSTAGRAM_ACCESS_TOKEN` e `INSTAGRAM_BUSINESS_ACCOUNT_ID` no `.env` na raiz do monorepo (usados pela API, ex.: `GET /api/instagram/media`).
-2. **Configurar a página Contato**: na API, definir envio por e‑mail (**Resend**: `CONTACT_RESEND_API_KEY`, `CONTACT_FROM_EMAIL`) e, se aplicável, **Twilio** para SMS/WhatsApp (`TWILIO_*`, `TWILIO_WHATSAPP_FROM`, etc.). Referência das variáveis: `.env.example`.
+1. **Configurar o Instagram**
+2. **Configurar página Contato**
+
+_Detalhes_: Instagram — variáveis `INSTAGRAM_ACCESS_TOKEN` e `INSTAGRAM_BUSINESS_ACCOUNT_ID` no `.env` (API: `GET /api/instagram/media`). Contato — `CONTACT_*` / `TWILIO_*` no `.env` da API conforme `.env.example`.
 
 ## Lembrete diário no Cursor
 
