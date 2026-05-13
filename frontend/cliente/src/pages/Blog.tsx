@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Seo } from "../seo/Seo";
 import { apiGet } from "../services/api";
+import { toPublicAssetUrl } from "../utils/localMediaUrl";
 
 type BlogPost = {
   id: number;
@@ -42,7 +43,7 @@ export function Blog() {
             <Link key={post.id} to={`/blog/${post.slug}`} className="overflow-hidden rounded-3xl border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
               {post.featuredImage ? (
                 <img
-                  src={post.featuredImage}
+                  src={toPublicAssetUrl(post.featuredImage) ?? post.featuredImage}
                   alt={post.title}
                   className="aspect-[16/10] w-full object-cover"
                   loading="lazy"

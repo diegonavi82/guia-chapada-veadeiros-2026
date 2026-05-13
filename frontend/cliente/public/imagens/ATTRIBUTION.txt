@@ -1,0 +1,3 @@
+Imagens JPG de demonstração derivadas de:
+"Chapada dos Veadeiros National Park, Goiás, Brazil.jpg" — Wikimedia Commons (CC BY-SA 4.0).
+Substitua por fotos próprias em public/imagens ou ajuste mediaPublic.ts se usar outro host.

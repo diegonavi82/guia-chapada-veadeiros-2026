@@ -1,13 +1,102 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
-import { mediaPublicBase } from "../config/mediaPublic";
+import { wpUploadsAssets as Wp } from "../config/wpUploadsAssets";
 import { Seo } from "../seo/Seo";
 import { apiGet } from "../services/api";
 
-const mapImageUrl = `${mediaPublicBase}/mapa.jpg`;
+const mapImageUrl = Wp.mapaCachoeiras2020;
 const whatsappUrl =
   "https://api.whatsapp.com/send?phone=5562982506891&text=*Quero%20montar%20um%20roteiro%20na%20Chapada*";
+
+/** Sem `couros`: o card “Aventura” já usa essa foto; evita hero idêntico ao destaque. */
+const heroBackdropImages = [
+  Wp.parqueNacionalSalto,
+  Wp.almecegas,
+  Wp.valeLua,
+  Wp.santaBarbara,
+  Wp.segredo,
+  Wp.cristais,
+  Wp.pocoEncantado,
+  Wp.macaquinhos,
+];
+
+const heroTitleText = "Passeios com guias locais";
+const heroLeadText =
+  "Contamos com uma equipe de guias parceiros na Chapada dos Veadeiros para realização de passeios exclusivos ou em excursões com grupos diversos";
+const heroSubText = "Faça seu roteiro ou entre na próxima excursão";
+
+const HERO_TITLE_STEP_MS = 72;
+const HERO_BODY_WORD_STEP_MS = 42;
+const HERO_BLOCK_GAP_MS = 140;
+const heroTitleWordCount = heroTitleText.trim().split(/\s+/).length;
+const heroLeadWordCount = heroLeadText.trim().split(/\s+/).length;
+const heroSubWordCount = heroSubText.trim().split(/\s+/).length;
+
+const heroAnim = {
+  badgeMs: 40,
+  titleStartMs: 120,
+  leadStartMs: 120 + heroTitleWordCount * HERO_TITLE_STEP_MS + HERO_BLOCK_GAP_MS,
+  subStartMs:
+    120 +
+    heroTitleWordCount * HERO_TITLE_STEP_MS +
+    HERO_BLOCK_GAP_MS +
+    heroLeadWordCount * HERO_BODY_WORD_STEP_MS +
+    HERO_BLOCK_GAP_MS,
+  ctaStartMs:
+    120 +
+    heroTitleWordCount * HERO_TITLE_STEP_MS +
+    HERO_BLOCK_GAP_MS +
+    heroLeadWordCount * HERO_BODY_WORD_STEP_MS +
+    HERO_BLOCK_GAP_MS +
+    heroSubWordCount * HERO_BODY_WORD_STEP_MS +
+    160,
+} as const;
+
+function pickRandomHeroImageIndex() {
+  return Math.floor(Math.random() * heroBackdropImages.length);
+}
+
+function StaggeredWords({
+  text,
+  startAtMs,
+  stepMs,
+  lineClassName,
+  wordClassName,
+}: {
+  text: string;
+  startAtMs: number;
+  stepMs: number;
+  lineClassName?: string;
+  wordClassName?: string;
+}) {
+  const words = text.trim().split(/\s+/);
+
+  return (
+    <span className={lineClassName}>
+      {words.map((word, index) => (
+        <span
+          key={`${index}-${word}`}
+          className={`gcv-hero-word ${wordClassName ?? ""}`}
+          style={{
+            animationDelay: `${startAtMs + index * stepMs}ms`,
+          }}
+        >
+          {word}
+          {index < words.length - 1 ? "\u00A0" : null}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+function WhatsAppGlyph({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden fill="currentColor">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.718 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.881 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+    </svg>
+  );
+}
 
 type InstagramMediaItem = {
   id: string;
@@ -28,56 +117,56 @@ const featuredAttractions = [
     title: "Almecegas e Poco Sao Bento",
     meta: "Trilha facil · 8 km",
     href: "/cachoeira-almecegas-poco-sao-bento-guia-chapada-veadeiros",
-    image: `${mediaPublicBase}/almecegas.jpg`,
+    image: Wp.almecegas,
   },
   {
     label: "Sao Jorge",
     title: "Vale da Lua",
     meta: "Trilha facil · 32 km",
     href: "/vale-lua-guia-chapada-veadeiros-sao-jorge",
-    image: `${mediaPublicBase}/vale-lua.jpg`,
+    image: Wp.valeLua,
   },
   {
     label: "Aventura",
     title: "Cataratas dos Couros",
     meta: "Trilha dificil · guia recomendado",
     href: "/cataratas-dos-couros-guia-chapada-veadeiros-alto-paraiso",
-    image: `${mediaPublicBase}/couros.jpg`,
+    image: Wp.couros,
   },
   {
     label: "Cavalcante",
     title: "Cachoeira Santa Barbara",
     meta: "Trilha mediana · 130 km",
     href: "/cachoeira-santa-barbara-guia-chapada-veadeiros-cavalcante",
-    image: `${mediaPublicBase}/santa-barbara.jpg`,
+    image: Wp.santaBarbara,
   },
   {
     label: "Sao Jorge",
     title: "Cachoeira do Segredo",
     meta: "Trilha mediana · 56 km",
     href: "/cachoeira-segredo-guia-chapada-veadeiros-sao-jorge",
-    image: `${mediaPublicBase}/segredo.jpg`,
+    image: Wp.segredo,
   },
   {
     label: "Alto Paraiso",
     title: "Cachoeira dos Cristais",
     meta: "Acesso facil · familia",
     href: "/cachoeira-cristais-guia-chapada-veadeiros-alto-paraiso",
-    image: `${mediaPublicBase}/cristais.jpg`,
+    image: Wp.cristais,
   },
   {
     label: "Teresina de Goias",
     title: "Poco Encantado",
     meta: "Trilha facil · 53 km",
     href: "/cachoeira-poco-encantado-guia-chapada-veadeiros-teresina-de-goias",
-    image: `${mediaPublicBase}/poco-encantado.jpg`,
+    image: Wp.pocoEncantado,
   },
   {
     label: "Sao Joao",
     title: "Macaquinhos",
     meta: "Trilha dificil · 44 km",
     href: "/cachoeira-macaquinhos-guia-chapada-veadeiros-sao-joao-alianca",
-    image: `${mediaPublicBase}/macaquinhos.jpg`,
+    image: Wp.macaquinhos,
   },
 ];
 
@@ -109,7 +198,7 @@ const reviews = [
     name: "Cintia Mariele",
     city: "Avaliação Google · 5 estrelas",
     tour: "Dicas de passeio na Chapada",
-    image: `${mediaPublicBase}/vale-lua.jpg`,
+    image: Wp.valeLua,
     quote:
       "Diego é um guia incrível! Sempre com as melhores dicas de passeio, muito conhecimento local e super solícito com os grupos. Recomendo demais!",
   },
@@ -117,7 +206,7 @@ const reviews = [
     name: "Mayla Santos",
     city: "Avaliação Google · 5 estrelas",
     tour: "Pontualidade e trilhas",
-    image: `${mediaPublicBase}/parque-nacional.jpg`,
+    image: Wp.parqueNacionalSalto,
     quote:
       "O Diego é um guia muito atencioso, solícito, com uma energia incrível! É extremamente pontual — não teve um dia sequer que chegou além do horário combinado —, dirige super bem, conhece a região e os caminhos das cachoeiras, o que facilitou muito cada dia.",
   },
@@ -125,7 +214,7 @@ const reviews = [
     name: "Paula Altenfelder",
     city: "Avaliação Google · 5 estrelas",
     tour: "Transporte + passeio",
-    image: `${mediaPublicBase}/couros.jpg`,
+    image: Wp.couros,
     quote:
       "O Diego é um excelente guia, espirituoso, solícito, parceiro, extremamente pontual (sempre estava no horário combinado para o passeio), bem humorado, responsável, ótimo motorista. Um dos poucos guias da Chapada que fazem o pacote completo de transporte e passeio. Nota 10! Recomendo de olhos fechados.",
   },
@@ -133,7 +222,7 @@ const reviews = [
     name: "Tatiana Lopes",
     city: "Avaliação Google · 5 estrelas",
     tour: "Roteiro com guia",
-    image: `${mediaPublicBase}/cristais.jpg`,
+    image: Wp.cristais,
     quote:
       "O Guia Diego da agência foi excelente guia! Super simpático, solícito e demonstrou ser mil conhecedor da região. Nos ajudou com o roteiro, boas dicas e sugeriu vários passeios! Super indico!",
   },
@@ -141,7 +230,7 @@ const reviews = [
     name: "Frederico Augusto Lobo",
     city: "Avaliação Google · 5 estrelas",
     tour: "Preço justo e trilhas",
-    image: `${mediaPublicBase}/santa-barbara.jpg`,
+    image: Wp.santaBarbara,
     quote:
       "Muito bom serviço, preço justo, recomendo. O guia Diego foi muito bom, passa total segurança nas trilhas e tem todo o conhecimento dos lugares.",
   },
@@ -149,7 +238,7 @@ const reviews = [
     name: "Priscila Navi",
     city: "Avaliação Google · 5 estrelas",
     tour: "Roteiro sob medida",
-    image: `${mediaPublicBase}/segredo.jpg`,
+    image: Wp.segredo,
     quote:
       "Guia Diego da agência muito simpático e conhecedor da região. Nos ajudou com o nosso roteiro e sugeriu passeios de acordo com as nossas necessidades. Nota dez!",
   },
@@ -157,7 +246,7 @@ const reviews = [
     name: "Gabriel Landa Noronha",
     city: "Avaliação Google · 5 estrelas",
     tour: "Guia local",
-    image: `${mediaPublicBase}/almecegas.jpg`,
+    image: Wp.almecegas,
     quote:
       "Se vc vai à Chapada, tem que conhecer o Diogo. Guia super honesto, bacana, bem humorado e conhecedor nato da chapada.",
   },
@@ -165,14 +254,14 @@ const reviews = [
     name: "Francis Lima",
     city: "Avaliação Google · 5 estrelas",
     tour: "Viagem com guia",
-    image: `${mediaPublicBase}/poco-encantado.jpg`,
+    image: Wp.pocoEncantado,
     quote: "Com certeza o guia Diego fez toda diferença na viagem! Indico mto!",
   },
   {
     name: "Alan Braz",
     city: "Avaliação Google · 5 estrelas",
     tour: "Recomendação",
-    image: `${mediaPublicBase}/macaquinhos.jpg`,
+    image: Wp.macaquinhos,
     quote:
       "Eu não usei o serviço, mas indico sempre pra quem tem pouco aptidão física para caminhada e subir em obstáculos, pois aqui é necessário.",
   },
@@ -180,35 +269,35 @@ const reviews = [
     name: "RudolphCarla",
     city: "Avaliação Google · 5 estrelas",
     tour: "Organização dos passeios",
-    image: `${mediaPublicBase}/vale-lua.jpg`,
+    image: Wp.valeLua,
     quote: "Ótimo para ajudar o turista a se organizar nos passeios.",
   },
   {
     name: "Kaique Rodrigues Vieira",
     city: "Avaliação Google · 5 estrelas",
     tour: "Energia e equipe",
-    image: `${mediaPublicBase}/parque-nacional.jpg`,
+    image: Wp.parqueNacionalSalto,
     quote: "Lugar muito legal, com pessoas incríveis de energia muito da hora.",
   },
   {
     name: "Daniel Klein",
     city: "Avaliação Google · 5 estrelas",
     tour: "Indicação",
-    image: `${mediaPublicBase}/couros.jpg`,
+    image: Wp.couros,
     quote: "Excelente! Recomendo demais, só vão!",
   },
   {
     name: "Felipe Spingola",
     city: "Avaliação Google · 5 estrelas",
     tour: "Agência na Chapada",
-    image: `${mediaPublicBase}/cristais.jpg`,
+    image: Wp.cristais,
     quote: "Melhor agência da Chapada. Recomendo!!!!",
   },
   {
     name: "Humberto Sousa",
     city: "Avaliação Google · 5 estrelas",
     tour: "Dicas e roteiros",
-    image: `${mediaPublicBase}/santa-barbara.jpg`,
+    image: Wp.santaBarbara,
     quote: "Excelente opção para descobrir as dicas da Chapada.",
   },
 ];
@@ -369,6 +458,7 @@ export function Home() {
   const [instagramPhotos, setInstagramPhotos] = useState<InstagramMediaItem[]>([]);
   const [isInstagramLoading, setIsInstagramLoading] = useState(true);
   const [instagramError, setInstagramError] = useState<string | null>(null);
+  const [heroImageIndex, setHeroImageIndex] = useState(() => pickRandomHeroImageIndex());
   const shuffledReviews = useMemo(() => shuffleReviews(), []);
   const totalReviewPages = Math.ceil(shuffledReviews.length / reviewsPerPage);
   const visibleMapHotspots = mapViewport === "mobile" ? [] : mapHotspots;
@@ -451,6 +541,16 @@ export function Home() {
     setReviewPage((currentPage) => (currentPage - 1 + totalReviewPages) % totalReviewPages);
   }
 
+  function goToPreviousHeroImage() {
+    setHeroImageIndex((index) => (index - 1 + heroBackdropImages.length) % heroBackdropImages.length);
+  }
+
+  function goToNextHeroImage() {
+    setHeroImageIndex((index) => (index + 1) % heroBackdropImages.length);
+  }
+
+  const heroImageUrl = heroBackdropImages[heroImageIndex];
+
   function goToNextReviewPage() {
     setReviewPage((currentPage) => (currentPage + 1) % totalReviewPages);
   }
@@ -491,37 +591,76 @@ export function Home() {
       />
       <section className="official-home-shell px-4 pb-16 pt-9">
         <div className="mx-auto max-w-[1180px]">
-          <div
-            className="relative overflow-hidden rounded-[1.8rem] px-10 py-20 text-white shadow-2xl md:px-12 md:py-28"
-            style={{
-              backgroundImage: `linear-gradient(90deg, rgba(9, 43, 52, 0.92), rgba(7, 91, 79, 0.58)), url(${mediaPublicBase}/parque-nacional.jpg)`,
-              backgroundPosition: "center",
-              backgroundSize: "cover",
-            }}
-          >
-            <button className="absolute left-4 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full border border-white/40 bg-white/10 text-white">
-              ‹
-            </button>
-            <button className="absolute right-4 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full border border-white/40 bg-white/10 text-white">
-              ›
-            </button>
-            <span className="inline-flex rounded-full bg-[#e58b55] px-4 py-2 text-xs font-black uppercase tracking-wide shadow-lg">
-              Chapada dos Veadeiros
-            </span>
-            <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[0.96] tracking-tight md:text-6xl">
-              Passeios com guias especializados locais
-            </h1>
-            <p className="mt-5 text-lg text-white/90">
-              Faça seu roteiro ou entre na próxima excursão
-            </p>
-            <a
-              className="mt-6 inline-flex rounded-full bg-[#e58b55] px-6 py-3 text-sm font-black text-white shadow-xl shadow-orange-900/30 transition hover:bg-[#d97941]"
-              href={whatsappUrl}
-              rel="noreferrer"
-              target="_blank"
-            >
-              Montar meu roteiro
-            </a>
+          <div className="relative overflow-hidden rounded-[1.8rem] bg-[#0f2420] shadow-2xl">
+            <img
+              src={heroImageUrl}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+              loading="eager"
+              decoding="async"
+              aria-hidden
+            />
+            <div
+              className="absolute inset-0 bg-gradient-to-br from-[#0a1814]/88 via-[#0f2420]/72 to-[#163d33]/65"
+              aria-hidden
+            />
+            <div className="relative z-[1] px-10 py-20 text-white md:px-12 md:py-28">
+              <button
+                type="button"
+                className="absolute left-4 top-1/2 z-[2] grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full border border-white/40 bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/18"
+                onClick={goToPreviousHeroImage}
+                aria-label="Imagem anterior"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                className="absolute right-4 top-1/2 z-[2] grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full border border-white/40 bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/18"
+                onClick={goToNextHeroImage}
+                aria-label="Próxima imagem"
+              >
+                ›
+              </button>
+              <div key={heroImageIndex}>
+                <span
+                  className="gcv-hero-line inline-flex rounded-full bg-[#e58b55] px-4 py-2 text-xs font-black uppercase tracking-wide shadow-lg"
+                  style={{ animationDelay: `${heroAnim.badgeMs}ms` }}
+                >
+                  Chapada dos Veadeiros
+                </span>
+                <h1 className="mt-5 max-w-4xl text-4xl font-black leading-[1.05] tracking-tight md:text-6xl lg:text-7xl">
+                  <StaggeredWords
+                    text={heroTitleText}
+                    startAtMs={heroAnim.titleStartMs}
+                    stepMs={HERO_TITLE_STEP_MS}
+                  />
+                </h1>
+                <p className="mt-5 max-w-3xl text-base font-medium leading-relaxed text-white/92 md:text-lg">
+                  <StaggeredWords
+                    text={heroLeadText}
+                    startAtMs={heroAnim.leadStartMs}
+                    stepMs={HERO_BODY_WORD_STEP_MS}
+                  />
+                </p>
+                <p className="mt-4 max-w-2xl text-sm font-semibold text-white/88 md:text-base">
+                  <StaggeredWords
+                    text={heroSubText}
+                    startAtMs={heroAnim.subStartMs}
+                    stepMs={HERO_BODY_WORD_STEP_MS}
+                  />
+                </p>
+                <a
+                  className="gcv-hero-line mt-7 inline-flex items-center gap-2 rounded-full bg-[#e58b55] px-6 py-3 text-sm font-black text-white shadow-xl shadow-orange-900/30 transition hover:bg-[#d97941]"
+                  href={whatsappUrl}
+                  rel="noreferrer"
+                  target="_blank"
+                  style={{ animationDelay: `${heroAnim.ctaStartMs}ms` }}
+                >
+                  <WhatsAppGlyph className="h-5 w-5 shrink-0" />
+                  Whatsapp
+                </a>
+              </div>
+            </div>
           </div>
 
           <section className="mt-12 rounded-[1.75rem] bg-white p-5 shadow-xl shadow-slate-200/80 md:p-8">

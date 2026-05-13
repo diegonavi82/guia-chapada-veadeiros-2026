@@ -25,6 +25,9 @@
     "wp:test": "node scripts/test-wp-db.mjs",
     "r2:test": "node scripts/r2-smoke-test.mjs",
     "migrate:wp": "node scripts/migrate-wordpress.mjs",
+    "sync:wp-media": "node scripts/sync-wp-uploads-to-public.mjs",
+    "fix:db-local-media": "node scripts/rewrite-db-media-to-local-paths.mjs",
+    "scrape:live-images": "node scripts/scrape-live-site-featured-images.mjs",
     "fix:image-urls": "node scripts/fix-public-image-urls.mjs"
   },
   "dependencies": {

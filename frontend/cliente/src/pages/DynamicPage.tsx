@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { mediaPublicBase } from "../config/mediaPublic";
+import { detailImageByPageSlug } from "../config/wpUploadsAssets";
 import { Seo } from "../seo/Seo";
 import { apiGet } from "../services/api";
+import { rewriteHtmlMediaUrls, toPublicAssetUrl } from "../utils/localMediaUrl";
 
 type PageData = {
   id: number;
@@ -13,18 +14,6 @@ type PageData = {
   featuredImage?: string | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
-};
-
-const detailImageBase = mediaPublicBase;
-const detailFallbackImages: Record<string, string> = {
-  "cachoeira-almecegas-poco-sao-bento-guia-chapada-veadeiros": `${detailImageBase}/almecegas.jpg`,
-  "vale-lua-guia-chapada-veadeiros-sao-jorge": `${detailImageBase}/vale-lua.jpg`,
-  "cataratas-dos-couros-guia-chapada-veadeiros-alto-paraiso": `${detailImageBase}/couros.jpg`,
-  "cachoeira-santa-barbara-guia-chapada-veadeiros-cavalcante": `${detailImageBase}/santa-barbara.jpg`,
-  "cachoeira-segredo-guia-chapada-veadeiros-sao-jorge": `${detailImageBase}/segredo.jpg`,
-  "cachoeira-cristais-guia-chapada-veadeiros-alto-paraiso": `${detailImageBase}/cristais.jpg`,
-  "cachoeira-poco-encantado-guia-chapada-veadeiros-teresina-de-goias": `${detailImageBase}/poco-encantado.jpg`,
-  "cachoeira-macaquinhos-guia-chapada-veadeiros-sao-joao-alianca": `${detailImageBase}/macaquinhos.jpg`,
 };
 
 function extractFirstImage(content: string) {
@@ -49,10 +38,52 @@ function prepareDetailContent(content: string, imageTag?: string) {
     .trim();
 }
 
-function splitDetailContent(content: string) {
-  const ctaMatch = content.match(/<a\b[^>]*class=["'][^"']*\bbutton\b[^"']*["'][^>]*>[\s\S]*?<\/a>/i);
+const guideBookingButtonHref =
+  "https://www.guiachapadaveadeiros.com/produto/guia-turismo-parque-nacional-chapada-veadeiros-alto-paraiso-sao-jorge/";
 
-  if (!ctaMatch) {
+/** Texto típico de fechamento do bloco lateral sem link .button migrado */
+const CONTRATE_NOTICE_RE = /\bContrate\s+um\s+guia\s+local\b(?:\s*[\!\?\.])?/i;
+
+/** Indica lista de infos (Distâncias, ingressos…) antes da redação principal */
+const METADATA_SIDEBAR_HINT_RE =
+  /\b(?:Dist[aâ]ncia|Ingressos|Atrativos|Nível\s+de\s+Dificuldade|Entrada\b|Estacionamento\b|Per[ií]odo\s+recomendado)\b/i;
+
+const BUTTON_ANCHOR_RE =
+  /<a\b[^>]*class=["']([^"']*)["'][^>]*>[\s\S]*?<\/a>/gi;
+
+function anchorClassesLookLikeSiteCta(classes: string) {
+  const c = classes.toLowerCase();
+  return (
+    /\bbutton\b/.test(c) ||
+    /\bfusion-button\b/.test(c) ||
+    /\bwp-element-button\b/.test(c) ||
+    /\bwp-block-button__link\b/.test(c)
+  );
+}
+
+function listButtonAnchors(content: string) {
+  const out: { html: string; index: number; label: string }[] = [];
+  let m: RegExpExecArray | null;
+  BUTTON_ANCHOR_RE.lastIndex = 0;
+
+  while ((m = BUTTON_ANCHOR_RE.exec(content)) !== null) {
+    const klass = m[1] ?? "";
+    if (!anchorClassesLookLikeSiteCta(klass)) {
+      continue;
+    }
+
+    out.push({
+      html: m[0],
+      index: m.index,
+      label: m[0].replace(/<[^>]+>/g, "").trim(),
+    });
+  }
+
+  return out;
+}
+
+function splitAtFirstButton(content: string, buttons = listButtonAnchors(content)) {
+  if (!buttons.length) {
     return {
       sidebarInfo: "",
       ctaHtml: "",
@@ -60,21 +91,154 @@ function splitDetailContent(content: string) {
     };
   }
 
+  const first = buttons[0]!;
+
   return {
     sidebarInfo: content
-      .slice(0, ctaMatch.index)
+      .slice(0, first.index)
       .replace(/Compre seu passeio!/i, "")
       .replace(/\n{3,}/g, "\n\n")
       .trim(),
-    ctaHtml: ctaMatch[0],
-    mainContent: content.slice((ctaMatch.index ?? 0) + ctaMatch[0].length).trim(),
+    ctaHtml: first.html,
+    mainContent: content.slice(first.index + first.html.length).trim(),
   };
 }
 
+/** Migrações em que \"Compre\" vem antes do bloco factual e \"Contrate\" fecha a barra lateral. */
+function splitCompreThenContrate(content: string, buttons: ReturnType<typeof listButtonAnchors>) {
+  const comprehend = buttons.findIndex((b) => /compre\s+seu\s+passeio\b/i.test(b.label));
+  const contrateIdx = buttons.findIndex((b) => /contrate\s+um\s+guia\s+local/i.test(b.label));
+
+  if (comprehend === -1 || contrateIdx === -1 || buttons[comprehend]!.index >= buttons[contrateIdx]!.index) {
+    return null;
+  }
+
+  const sliceCompre = buttons[comprehend]!;
+  const sliceContrate = buttons[contrateIdx]!;
+
+  const sidebarInfo = content.slice(sliceCompre.index + sliceCompre.html.length, sliceContrate.index).trim();
+  const ctaHtml = sliceContrate.html;
+  const mainContent = `${sliceCompre.html}\n${content.slice(sliceContrate.index + sliceContrate.html.length).trim()}`;
+
+  return { sidebarInfo, ctaHtml, mainContent };
+}
+
+/** HTML sem anchors .button mas com aviso de \"Contrate\" (ex.: Vale da Lua). */
+function splitPlaintextSidebarBeforeContrateNotice(content: string) {
+  const contrNotice = CONTRATE_NOTICE_RE.exec(content);
+
+  if (!contrNotice) {
+    return null;
+  }
+
+  let sidebarRaw = content.slice(0, contrNotice.index).replace(/^Compre\s+seu\s+passeio!\s*/im, "").trim();
+  sidebarRaw = sidebarRaw.replace(/\s+$/, "");
+
+  const afterContr = contrNotice.index + contrNotice[0].length;
+  let mainTail = content.slice(afterContr).trimStart();
+
+  mainTail = mainTail.startsWith("</p>")
+    ? mainTail.replace(/^<\/p>\s*/i, "").trimStart()
+    : mainTail;
+
+  const ctaHtml = `<a href="${guideBookingButtonHref}" class="button" rel="noopener noreferrer">Contrate um guia local!</a>`;
+  const preludeCompre = `<a href="/contato" class="button">Compre seu passeio!</a>\n`;
+
+  return {
+    sidebarInfo: sidebarRaw,
+    ctaHtml,
+    mainContent: preludeCompre + mainTail,
+  };
+}
+
+function headHasLongProseBlock(head: string) {
+  return head.split(/\n{2,}/).some((b) => b.replace(/\s+/g, " ").trim().length > 260);
+}
+
+/**
+ * Fallback: primeiro <h2|h3> após um bloco curto parecendo ficha técnica.
+ * Cobre migrações sem fusion_button nem texto \"Contrate…\" antes do texto corrido.
+ */
+function splitMetadataBeforeFirstHeading(content: string) {
+  const hExec = /<h[23]\b/i.exec(content);
+
+  if (!hExec || hExec.index < 60) {
+    return null;
+  }
+
+  const head = content.slice(0, hExec.index).trim();
+  const body = content.slice(hExec.index).trim();
+
+  if (!METADATA_SIDEBAR_HINT_RE.test(head) || head.length > 1400 || headHasLongProseBlock(head)) {
+    return null;
+  }
+
+  let sidebarRaw = head.replace(/^Compre\s+seu\s+passeio!\s*/im, "").trim();
+  sidebarRaw = sidebarRaw.replace(CONTRATE_NOTICE_RE, "").trim();
+  sidebarRaw = sidebarRaw.replace(/\n{3,}/g, "\n\n").trim();
+
+  const hadContrateInHead = /\bcontrate\s+um\s+guia\s+local\b/i.test(head);
+  const hadComprePlain = /\bcompre\s+seu\s+passeio\b/i.test(head);
+  const suggestContrate =
+    hadContrateInHead ||
+    /\brecomendado\s+.*\bguia\b/i.test(head) ||
+    /\bguia\s+obrigat[oó]rio\b/i.test(head) ||
+    /\bcom\s+guia\s+local\b/i.test(head);
+
+  let ctaHtml = "";
+  if (suggestContrate) {
+    ctaHtml = `<a href="${guideBookingButtonHref}" class="button" rel="noopener noreferrer">Contrate um guia local!</a>`;
+  }
+
+  const preludeCompre = hadComprePlain
+    ? `<a href="/contato" class="button">Compre seu passeio!</a>\n`
+    : "";
+
+  const mainContent = preludeCompre + body;
+
+  if (!sidebarRaw && !ctaHtml && !preludeCompre) {
+    return null;
+  }
+
+  return { sidebarInfo: sidebarRaw, ctaHtml, mainContent };
+}
+
+function splitDetailContent(content: string) {
+  const buttons = listButtonAnchors(content);
+
+  const inverted = splitCompreThenContrate(content, buttons);
+  if (inverted) {
+    return inverted;
+  }
+
+  const plaintextSplit =
+    buttons.length === 0 ? splitPlaintextSidebarBeforeContrateNotice(content) : null;
+  if (plaintextSplit) {
+    return plaintextSplit;
+  }
+
+  const metadataSplit = buttons.length === 0 ? splitMetadataBeforeFirstHeading(content) : null;
+  if (metadataSplit) {
+    return metadataSplit;
+  }
+
+  return splitAtFirstButton(content);
+}
+
+function stripHtmlTags(s: string) {
+  return s.replace(/<[^>]+>/g, "");
+}
+
 function getSidebarLines(sidebarInfo: string) {
-  return sidebarInfo
-    .split("\n")
-    .map((line) => line.trim())
+  const plain = stripHtmlTags(sidebarInfo).trim();
+
+  if (!plain) {
+    return [];
+  }
+
+  return plain
+    .split(/\n{2,}/)
+    .map((block) => block.replace(/\n+/g, " ").trim())
     .filter(Boolean);
 }
 
@@ -112,11 +276,16 @@ export function DynamicPage() {
   }
 
   const firstImage = extractFirstImage(page.content);
-  const fallbackImage = detailFallbackImages[page.slug];
-  const detailImage = fallbackImage || page.featuredImage || firstImage?.src;
+  const rawDetailImage = page.featuredImage || detailImageByPageSlug[page.slug] || firstImage?.src;
+  const detailImage = toPublicAssetUrl(rawDetailImage) ?? rawDetailImage;
   const detailContent = prepareDetailContent(page.content, firstImage?.tag);
   const detailParts = splitDetailContent(detailContent);
   const sidebarLines = getSidebarLines(detailParts.sidebarInfo);
+  const mainHtml = rewriteHtmlMediaUrls(detailParts.mainContent);
+  const ogImage = toPublicAssetUrl(page.featuredImage) ?? toPublicAssetUrl(detailImage) ?? undefined;
+
+  const hasSidebarColumn =
+    Boolean(detailImage) || Boolean(detailParts.ctaHtml) || sidebarLines.length > 0;
 
   return (
     <article className="gcv-detail-page bg-[#f4f6fb] px-4 py-8 md:py-10">
@@ -124,49 +293,62 @@ export function DynamicPage() {
         title={page.seoTitle || page.title}
         description={page.seoDescription || page.excerpt || `Pagina ${page.title}`}
         canonical={`/${page.slug}`}
-        ogImage={page.featuredImage ?? undefined}
+        ogImage={ogImage}
       />
       <div className="mx-auto max-w-[1180px]">
         <header className="gcv-detail-title">
           <h1>{page.title}</h1>
         </header>
 
-        <section className="gcv-detail-layout">
-          <aside className="gcv-detail-sidebar">
-            {detailImage ? (
-              <img
-                src={detailImage}
-                alt={firstImage?.alt || page.title}
-                className="gcv-detail-main-image"
-                loading="eager"
-              />
-            ) : null}
-            {detailParts.ctaHtml ? (
-              <div
-                className="gcv-detail-cta"
-                dangerouslySetInnerHTML={{ __html: detailParts.ctaHtml }}
-              />
-            ) : null}
-            {sidebarLines.length > 0 ? (
-              <div className="gcv-detail-info">
-                {sidebarLines.map((line, index) => {
-                  const isHeading = line.endsWith(":") || (!line.startsWith("-") && index === 0);
+        <section
+          className={
+            hasSidebarColumn ? "gcv-detail-layout" : "gcv-detail-layout gcv-detail-layout--full"
+          }
+        >
+          {hasSidebarColumn ? (
+            <>
+              <aside className="gcv-detail-sidebar">
+                {detailImage ? (
+                  <img
+                    src={detailImage}
+                    alt={firstImage?.alt || page.title}
+                    className="gcv-detail-main-image"
+                    loading="eager"
+                  />
+                ) : null}
+                {detailParts.ctaHtml ? (
+                  <div
+                    className="gcv-detail-cta"
+                    dangerouslySetInnerHTML={{ __html: rewriteHtmlMediaUrls(detailParts.ctaHtml) }}
+                  />
+                ) : null}
+                {sidebarLines.length > 0 ? (
+                  <div className="gcv-detail-info">
+                    {sidebarLines.map((line, index) => {
+                      const isHeading = line.endsWith(":") || (!line.startsWith("-") && index === 0);
 
-                  return (
-                    <p key={`${line}-${index}`} className={isHeading ? "gcv-detail-info-heading" : undefined}>
-                      {line}
-                    </p>
-                  );
-                })}
-              </div>
-            ) : null}
-            {page.excerpt ? <p className="gcv-detail-excerpt">{page.excerpt}</p> : null}
-          </aside>
+                      return (
+                        <p
+                          key={`${line}-${index}`}
+                          className={isHeading ? "gcv-detail-info-heading" : undefined}
+                        >
+                          {line}
+                        </p>
+                      );
+                    })}
+                  </div>
+                ) : null}
+                {page.excerpt ? <p className="gcv-detail-excerpt">{page.excerpt}</p> : null}
+              </aside>
 
-          <div
-            className="gcv-detail-content"
-            dangerouslySetInnerHTML={{ __html: detailParts.mainContent }}
-          />
+              <div className="gcv-detail-content" dangerouslySetInnerHTML={{ __html: mainHtml }} />
+            </>
+          ) : (
+            <div className="gcv-detail-full-main">
+              {page.excerpt ? <p className="gcv-detail-excerpt">{page.excerpt}</p> : null}
+              <div className="gcv-detail-content gcv-detail-content--wide" dangerouslySetInnerHTML={{ __html: mainHtml }} />
+            </div>
+          )}
         </section>
       </div>
     </article>

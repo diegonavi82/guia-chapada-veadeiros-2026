@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Seo } from "../seo/Seo";
 import { apiGet } from "../services/api";
+import { rewriteHtmlMediaUrls, toPublicAssetUrl } from "../utils/localMediaUrl";
 
 type ArticleData = {
   id: number;
@@ -41,6 +42,8 @@ export function Article() {
   const title = article?.seoTitle || article?.title || fallbackTitle || "Artigo";
   const description =
     article?.seoDescription || article?.excerpt || "Artigo migrado do WordPress com metadados SEO preservados.";
+  const heroImage = toPublicAssetUrl(article?.featuredImage) ?? article?.featuredImage ?? undefined;
+  const bodyHtml = article?.content ? rewriteHtmlMediaUrls(article.content) : "";
 
   return (
     <article className="mx-auto max-w-4xl px-4 py-16">
@@ -48,7 +51,7 @@ export function Article() {
         title={title}
         description={description}
         canonical={`/blog/${slug}`}
-        ogImage={article?.featuredImage ?? undefined}
+        ogImage={heroImage}
         type="article"
         breadcrumbs={[
           { name: "Inicio", url: "/" },
@@ -61,16 +64,16 @@ export function Article() {
           headline: title,
           mainEntityOfPage: `/blog/${slug}`,
           datePublished: article?.publishedAt,
-          image: article?.featuredImage,
+          image: heroImage,
         }}
       />
       {isLoading ? <p className="text-slate-600">Carregando artigo...</p> : null}
       {error ? <p className="rounded-2xl bg-red-50 p-4 text-red-700">{error}</p> : null}
       {article ? (
         <>
-          {article.featuredImage ? (
+          {heroImage ? (
             <img
-              src={article.featuredImage}
+              src={heroImage}
               alt={article.title}
               className="mb-10 aspect-[16/9] w-full rounded-3xl object-cover"
               loading="eager"
@@ -80,7 +83,7 @@ export function Article() {
           {article.excerpt ? <p className="mt-6 text-xl text-slate-700">{article.excerpt}</p> : null}
           <div
             className="prose prose-lg mt-10 max-w-none"
-            dangerouslySetInnerHTML={{ __html: article.content }}
+            dangerouslySetInnerHTML={{ __html: bodyHtml }}
           />
         </>
       ) : null}

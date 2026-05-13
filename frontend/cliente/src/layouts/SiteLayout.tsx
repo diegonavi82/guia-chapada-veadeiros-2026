@@ -1,5 +1,5 @@
 import { Link, Outlet } from "react-router-dom";
-import { mediaPublicBase } from "../config/mediaPublic";
+import { wpUploadsAssets } from "../config/wpUploadsAssets";
 
 const navItems = [
   ["Fale Conosco", "/contato"],
@@ -18,7 +18,7 @@ export function SiteLayout() {
         <div className="mx-auto flex max-w-[1180px] items-center justify-between px-4 py-5">
           <Link to="/" className="flex items-center gap-3 text-sm font-semibold text-cerrado-900 md:text-base">
             <img
-              src={`${mediaPublicBase}/logo-guia-chapada-veadeiros.png`}
+              src={wpUploadsAssets.siteLogo}
               alt="Guia Chapada Veadeiros Logo"
               className="h-10 w-auto"
             />
@@ -42,7 +42,7 @@ export function SiteLayout() {
         <div className="mx-auto grid max-w-[1180px] gap-10 py-14 md:grid-cols-[1.35fr_1fr_1fr_1fr]">
           <div>
             <img
-              src={`${mediaPublicBase}/parque-nacional.jpg`}
+              src={wpUploadsAssets.parqueNacionalSalto}
               alt="Chapada dos Veadeiros"
               className="mb-5 h-24 w-32 rounded-2xl object-cover shadow-2xl"
             />
