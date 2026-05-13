@@ -12,6 +12,7 @@ coverage/
 *.zip
 *.tar
 *.tar.gz
+.cursor/reminder-last-day.txt
 uploads/*
 !uploads/.gitkeep
 api/prisma/migrations/dev.db
