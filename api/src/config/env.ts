@@ -23,6 +23,18 @@ const envSchema = z.object({
   R2_SECRET_ACCESS_KEY: z.string().min(1),
   INSTAGRAM_ACCESS_TOKEN: z.string().optional(),
   INSTAGRAM_BUSINESS_ACCOUNT_ID: z.string().optional(),
+  /** Contato — e-mail via Resend (https://resend.com) */
+  CONTACT_RESEND_API_KEY: z.string().optional(),
+  CONTACT_FROM_EMAIL: z.string().email().optional(),
+  CONTACT_TO_EMAIL: z.string().email().default("contato@guiachapadaveadeiros.com"),
+  /** Contato — SMS para o número de atendimento (Twilio). Corpo será um resumo. */
+  TWILIO_ACCOUNT_SID: z.string().optional(),
+  TWILIO_AUTH_TOKEN: z.string().optional(),
+  TWILIO_FROM_NUMBER: z.string().optional(),
+  CONTACT_NOTIFY_SMS_TO_E164: z.string().default("+5562982506891"),
+  /** Contato — WhatsApp via Twilio (From/To com prefixo whatsapp:+...) */
+  TWILIO_WHATSAPP_FROM: z.string().optional(),
+  CONTACT_NOTIFY_WHATSAPP_TO: z.string().default("whatsapp:+5562982506891"),
 });
 
 export const env = envSchema.parse(process.env);

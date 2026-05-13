@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { wpUploadsAssets as Wp } from "../config/wpUploadsAssets";
@@ -9,52 +9,68 @@ const mapImageUrl = Wp.mapaCachoeiras2020;
 const whatsappUrl =
   "https://api.whatsapp.com/send?phone=5562982506891&text=*Quero%20montar%20um%20roteiro%20na%20Chapada*";
 
-/** Sem `couros`: o card “Aventura” já usa essa foto; evita hero idêntico ao destaque. */
-const heroBackdropImages = [
-  Wp.parqueNacionalSalto,
-  Wp.almecegas,
-  Wp.valeLua,
-  Wp.santaBarbara,
-  Wp.segredo,
-  Wp.cristais,
-  Wp.pocoEncantado,
-  Wp.macaquinhos,
+type HeroCta =
+  | { kind: "whatsapp"; label: string }
+  | { kind: "router"; to: string; label: string };
+
+type HeroSlideCopy = {
+  badge: string;
+  title: string;
+  lead: string;
+  sub: string;
+  cta: HeroCta;
+};
+
+type HeroSlide = HeroSlideCopy & { image: string };
+
+/** Apenas dois slides principais: guias locais · em breve plataforma. */
+const HERO_SLIDES: HeroSlide[] = [
+  {
+    image: Wp.valeLua,
+    badge: "Chapada dos Veadeiros",
+    title: "Passeios com guias locais",
+    lead:
+      "Contamos com uma equipe de guias parceiros na Chapada dos Veadeiros para realização de passeios exclusivos ou em excursões com grupos diversos",
+    sub: "Faça seu roteiro ou entre na próxima excursão",
+    cta: { kind: "whatsapp", label: "Whatsapp" },
+  },
+  {
+    image: Wp.almecegas,
+    badge: "Em breve",
+    title: "Sua expedição começa na tela",
+    lead:
+      "Preparamos a plataforma de vendas do Guia Chapada Veadeiros para você escolher roteiros, datas e experiências com o mesmo olhar local — tudo em um fluxo digital limpo, seguro e pensado para quem viaja com intensidade.",
+    sub: "Seja avisado em primeira mão quando abrirmos as reservas e garanta prioridade para montar seu itinerário.",
+    cta: { kind: "router", to: "/contato", label: "Quero entrar na lista" },
+  },
 ];
 
-const heroTitleText = "Passeios com guias locais";
-const heroLeadText =
-  "Contamos com uma equipe de guias parceiros na Chapada dos Veadeiros para realização de passeios exclusivos ou em excursões com grupos diversos";
-const heroSubText = "Faça seu roteiro ou entre na próxima excursão";
+const HERO_DRAG_THRESHOLD_PX = 52;
+const HERO_DRAG_LOCK_MIN_PX = 14;
+
+function pickRandomHeroSlideIndex() {
+  return Math.floor(Math.random() * HERO_SLIDES.length);
+}
 
 const HERO_TITLE_STEP_MS = 72;
 const HERO_BODY_WORD_STEP_MS = 42;
 const HERO_BLOCK_GAP_MS = 140;
-const heroTitleWordCount = heroTitleText.trim().split(/\s+/).length;
-const heroLeadWordCount = heroLeadText.trim().split(/\s+/).length;
-const heroSubWordCount = heroSubText.trim().split(/\s+/).length;
 
-const heroAnim = {
-  badgeMs: 40,
-  titleStartMs: 120,
-  leadStartMs: 120 + heroTitleWordCount * HERO_TITLE_STEP_MS + HERO_BLOCK_GAP_MS,
-  subStartMs:
-    120 +
-    heroTitleWordCount * HERO_TITLE_STEP_MS +
-    HERO_BLOCK_GAP_MS +
-    heroLeadWordCount * HERO_BODY_WORD_STEP_MS +
-    HERO_BLOCK_GAP_MS,
-  ctaStartMs:
-    120 +
-    heroTitleWordCount * HERO_TITLE_STEP_MS +
-    HERO_BLOCK_GAP_MS +
-    heroLeadWordCount * HERO_BODY_WORD_STEP_MS +
-    HERO_BLOCK_GAP_MS +
-    heroSubWordCount * HERO_BODY_WORD_STEP_MS +
-    160,
-} as const;
+function buildHeroAnim(title: string, lead: string, sub: string) {
+  const titleWords = title.trim().split(/\s+/).filter(Boolean).length;
+  const leadWords = lead.trim().split(/\s+/).filter(Boolean).length;
+  const subTrim = sub.trim();
+  const subWords = subTrim ? subTrim.split(/\s+/).filter(Boolean).length : 0;
 
-function pickRandomHeroImageIndex() {
-  return Math.floor(Math.random() * heroBackdropImages.length);
+  const badgeMs = 40;
+  const titleStartMs = 120;
+  const leadStartMs = titleStartMs + titleWords * HERO_TITLE_STEP_MS + HERO_BLOCK_GAP_MS;
+  const subStartMs = leadStartMs + leadWords * HERO_BODY_WORD_STEP_MS + HERO_BLOCK_GAP_MS;
+  const afterBodyMs =
+    subWords > 0 ? subStartMs + subWords * HERO_BODY_WORD_STEP_MS : leadStartMs + leadWords * HERO_BODY_WORD_STEP_MS;
+  const ctaStartMs = afterBodyMs + HERO_BLOCK_GAP_MS + 160;
+
+  return { badgeMs, titleStartMs, leadStartMs, subStartMs, ctaStartMs };
 }
 
 function StaggeredWords({
@@ -458,7 +474,8 @@ export function Home() {
   const [instagramPhotos, setInstagramPhotos] = useState<InstagramMediaItem[]>([]);
   const [isInstagramLoading, setIsInstagramLoading] = useState(true);
   const [instagramError, setInstagramError] = useState<string | null>(null);
-  const [heroImageIndex, setHeroImageIndex] = useState(() => pickRandomHeroImageIndex());
+  const [heroImageIndex, setHeroImageIndex] = useState(() => pickRandomHeroSlideIndex());
+  const heroPointerDragRef = useRef({ pointerId: -1, startX: 0, locked: false });
   const shuffledReviews = useMemo(() => shuffleReviews(), []);
   const totalReviewPages = Math.ceil(shuffledReviews.length / reviewsPerPage);
   const visibleMapHotspots = mapViewport === "mobile" ? [] : mapHotspots;
@@ -542,14 +559,72 @@ export function Home() {
   }
 
   function goToPreviousHeroImage() {
-    setHeroImageIndex((index) => (index - 1 + heroBackdropImages.length) % heroBackdropImages.length);
+    setHeroImageIndex((index) => (index - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
   }
 
   function goToNextHeroImage() {
-    setHeroImageIndex((index) => (index + 1) % heroBackdropImages.length);
+    setHeroImageIndex((index) => (index + 1) % HERO_SLIDES.length);
   }
 
-  const heroImageUrl = heroBackdropImages[heroImageIndex];
+  function handleHeroPointerDown(event: React.PointerEvent<HTMLDivElement>) {
+    if (event.pointerType === "mouse" && event.button !== 0) {
+      return;
+    }
+
+    const target = event.target as HTMLElement;
+    if (target.closest("button, a, [role='tab']")) {
+      return;
+    }
+
+    heroPointerDragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      locked: false,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function handleHeroPointerMove(event: React.PointerEvent<HTMLDivElement>) {
+    const drag = heroPointerDragRef.current;
+    if (drag.pointerId !== event.pointerId) {
+      return;
+    }
+
+    if (!drag.locked && Math.abs(event.clientX - drag.startX) >= HERO_DRAG_LOCK_MIN_PX) {
+      drag.locked = true;
+    }
+  }
+
+  function handleHeroPointerEnd(event: React.PointerEvent<HTMLDivElement>) {
+    const drag = heroPointerDragRef.current;
+    if (drag.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const dx = event.clientX - drag.startX;
+
+    try {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    } catch {
+      /* already released */
+    }
+
+    heroPointerDragRef.current = { pointerId: -1, startX: 0, locked: false };
+
+    if (drag.locked && Math.abs(dx) >= HERO_DRAG_THRESHOLD_PX) {
+      if (dx < 0) {
+        goToNextHeroImage();
+      } else {
+        goToPreviousHeroImage();
+      }
+    }
+  }
+
+  const heroSlide = HERO_SLIDES[heroImageIndex];
+  const heroAnim = useMemo(
+    () => buildHeroAnim(heroSlide.title, heroSlide.lead, heroSlide.sub),
+    [heroSlide.title, heroSlide.lead, heroSlide.sub],
+  );
 
   function goToNextReviewPage() {
     setReviewPage((currentPage) => (currentPage + 1) % totalReviewPages);
@@ -591,9 +666,18 @@ export function Home() {
       />
       <section className="official-home-shell px-4 pb-16 pt-9">
         <div className="mx-auto max-w-[1180px]">
-          <div className="relative overflow-hidden rounded-[1.8rem] bg-[#0f2420] shadow-2xl">
+          <div
+            className="relative cursor-grab touch-pan-y overflow-hidden rounded-[1.8rem] bg-[#0f2420] shadow-2xl active:cursor-grabbing"
+            role="region"
+            aria-roledescription="Carrossel"
+            aria-label={`Destaque ${heroImageIndex + 1} de ${HERO_SLIDES.length}`}
+            onPointerCancel={handleHeroPointerEnd}
+            onPointerDown={handleHeroPointerDown}
+            onPointerMove={handleHeroPointerMove}
+            onPointerUp={handleHeroPointerEnd}
+          >
             <img
-              src={heroImageUrl}
+              src={heroSlide.image}
               alt=""
               className="absolute inset-0 h-full w-full object-cover"
               loading="eager"
@@ -601,13 +685,15 @@ export function Home() {
               aria-hidden
             />
             <div
-              className="absolute inset-0 bg-gradient-to-br from-[#0a1814]/88 via-[#0f2420]/72 to-[#163d33]/65"
+              className="absolute inset-0 bg-gradient-to-br from-[#0a1814]/92 via-[#0f2420]/78 to-[#163d33]/70"
               aria-hidden
             />
-            <div className="relative z-[1] px-10 py-20 text-white md:px-12 md:py-28">
+            <div
+              className="gcv-hero-overlay-text relative z-[1] px-5 py-16 text-white sm:px-8 md:px-12 md:py-24 lg:py-28"
+            >
               <button
                 type="button"
-                className="absolute left-4 top-1/2 z-[2] grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full border border-white/40 bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/18"
+                className="absolute left-4 top-1/2 z-[2] grid h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full border border-white/40 bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/18"
                 onClick={goToPreviousHeroImage}
                 aria-label="Imagem anterior"
               >
@@ -615,7 +701,7 @@ export function Home() {
               </button>
               <button
                 type="button"
-                className="absolute right-4 top-1/2 z-[2] grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full border border-white/40 bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/18"
+                className="absolute right-4 top-1/2 z-[2] grid h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full border border-white/40 bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/18"
                 onClick={goToNextHeroImage}
                 aria-label="Próxima imagem"
               >
@@ -623,57 +709,93 @@ export function Home() {
               </button>
               <div key={heroImageIndex}>
                 <span
-                  className="gcv-hero-line inline-flex rounded-full bg-[#e58b55] px-4 py-2 text-xs font-black uppercase tracking-wide shadow-lg"
+                  className="gcv-hero-line gcv-hero-badge inline-flex rounded-full bg-[#e58b55] px-4 py-2 text-xs font-black uppercase tracking-wide text-white shadow-lg sm:text-[11px]"
                   style={{ animationDelay: `${heroAnim.badgeMs}ms` }}
                 >
-                  Chapada dos Veadeiros
+                  {heroSlide.badge}
                 </span>
-                <h1 className="mt-5 max-w-4xl text-4xl font-black leading-[1.05] tracking-tight md:text-6xl lg:text-7xl">
+                <h1 className="mt-5 max-w-4xl text-balance text-3xl font-black leading-[1.08] tracking-tight sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
                   <StaggeredWords
-                    text={heroTitleText}
+                    text={heroSlide.title}
                     startAtMs={heroAnim.titleStartMs}
                     stepMs={HERO_TITLE_STEP_MS}
                   />
                 </h1>
-                <p className="mt-5 max-w-3xl text-base font-medium leading-relaxed text-white/92 md:text-lg">
+                <p className="mt-5 max-w-3xl text-base font-medium leading-relaxed text-white/92 md:text-lg md:leading-relaxed">
                   <StaggeredWords
-                    text={heroLeadText}
+                    text={heroSlide.lead}
                     startAtMs={heroAnim.leadStartMs}
                     stepMs={HERO_BODY_WORD_STEP_MS}
                   />
                 </p>
-                <p className="mt-4 max-w-2xl text-sm font-semibold text-white/88 md:text-base">
-                  <StaggeredWords
-                    text={heroSubText}
-                    startAtMs={heroAnim.subStartMs}
-                    stepMs={HERO_BODY_WORD_STEP_MS}
-                  />
-                </p>
-                <a
-                  className="gcv-hero-line mt-7 inline-flex items-center gap-2 rounded-full bg-[#e58b55] px-6 py-3 text-sm font-black text-white shadow-xl shadow-orange-900/30 transition hover:bg-[#d97941]"
-                  href={whatsappUrl}
-                  rel="noreferrer"
-                  target="_blank"
-                  style={{ animationDelay: `${heroAnim.ctaStartMs}ms` }}
-                >
-                  <WhatsAppGlyph className="h-5 w-5 shrink-0" />
-                  Whatsapp
-                </a>
+                {heroSlide.sub.trim() ? (
+                  <p className="mt-4 max-w-2xl text-sm font-medium leading-relaxed text-white/88 md:text-base">
+                    <StaggeredWords
+                      text={heroSlide.sub}
+                      startAtMs={heroAnim.subStartMs}
+                      stepMs={HERO_BODY_WORD_STEP_MS}
+                    />
+                  </p>
+                ) : null}
+                {heroSlide.cta.kind === "whatsapp" ? (
+                  <a
+                    className="gcv-hero-line mt-7 inline-flex items-center gap-2 rounded-full bg-[#e58b55] px-6 py-3.5 text-xs font-extrabold uppercase tracking-[0.12em] text-white shadow-xl shadow-orange-950/40 transition hover:bg-[#d97941] md:text-sm"
+                    href={whatsappUrl}
+                    rel="noreferrer"
+                    target="_blank"
+                    style={{ animationDelay: `${heroAnim.ctaStartMs}ms` }}
+                  >
+                    <WhatsAppGlyph className="h-5 w-5 shrink-0" />
+                    {heroSlide.cta.label}
+                  </a>
+                ) : (
+                  <Link
+                    className="gcv-hero-line mt-7 inline-flex items-center justify-center rounded-full bg-[#e58b55] px-6 py-3.5 text-xs font-extrabold uppercase tracking-[0.12em] text-white shadow-xl shadow-orange-950/40 transition hover:bg-[#d97941] md:text-sm"
+                    to={heroSlide.cta.to}
+                    style={{ animationDelay: `${heroAnim.ctaStartMs}ms` }}
+                  >
+                    {heroSlide.cta.label}
+                  </Link>
+                )}
               </div>
+            </div>
+            <div
+              className="absolute bottom-3 left-0 right-0 z-[3] flex justify-center px-4 sm:bottom-4"
+              role="tablist"
+              aria-label="Navegação dos destaques"
+            >
+              {HERO_SLIDES.map((_, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  role="tab"
+                  aria-selected={index === heroImageIndex}
+                  aria-label={`Destaque ${index + 1} de ${HERO_SLIDES.length}`}
+                  className={
+                    index === heroImageIndex
+                      ? "mx-1.5 h-2 w-10 shrink-0 rounded-full bg-white shadow-sm transition-all duration-300 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                      : "mx-1.5 h-2 w-2 shrink-0 rounded-full bg-white/40 transition-all duration-300 ease-out hover:bg-white/65 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                  }
+                  onClick={() => setHeroImageIndex(index)}
+                />
+              ))}
             </div>
           </div>
 
-          <section className="mt-12 rounded-[1.75rem] bg-white p-5 shadow-xl shadow-slate-200/80 md:p-8">
-            <div className="flex items-center justify-between gap-4">
+          <section className="mt-12 rounded-[1.75rem] border border-white/40 bg-white/90 p-5 shadow-xl shadow-slate-400/15 backdrop-blur-sm md:p-8">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <span className="inline-flex rounded-full bg-[#e58b55] px-3 py-1 text-[11px] font-black uppercase tracking-wide text-white">
+                <span className="inline-flex rounded-full bg-[#e58b55] px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-white sm:text-[11px]">
                   Atrações imperdíveis
                 </span>
-                <h2 className="mt-3 text-2xl font-medium tracking-tight text-slate-900 md:text-4xl">
+                <h2 className="mt-3 max-w-[20ch] text-balance text-2xl font-black leading-[1.12] text-slate-900 sm:max-w-none md:text-4xl lg:text-[2.65rem]">
                   Cachoeiras e trilhas mais buscadas
                 </h2>
               </div>
-              <Link className="text-sm font-black text-cerrado-700" to="/cachoeiras-chapada-dos-veadeiros">
+              <Link
+                className="shrink-0 text-xs font-extrabold uppercase tracking-[0.12em] text-cerrado-700 transition hover:text-[#df8350]"
+                to="/cachoeiras-chapada-dos-veadeiros"
+              >
                 Ver Todas
               </Link>
             </div>
@@ -683,60 +805,67 @@ export function Home() {
                 <Link
                   key={item.href}
                   to={item.href}
-                  className="group relative h-72 overflow-hidden rounded-2xl bg-slate-900 shadow-md"
+                  className="group relative h-72 overflow-hidden rounded-2xl bg-slate-900 shadow-lg ring-1 ring-black/5 transition hover:shadow-2xl"
                 >
                   <img
                     src={item.image}
                     alt={item.title}
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.06]"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-                  <span className="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-[10px] font-black uppercase text-slate-900">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/25 to-transparent" />
+                  <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1.5 text-[9px] text-slate-900 shadow-md sm:text-[10px]">
                     {item.label}
                   </span>
-                  <h3 className="absolute bottom-4 left-4 right-4 text-lg font-black leading-tight text-white">
+                  <h3 className="gcv-card-photo-text absolute bottom-5 left-4 right-4 text-balance text-base font-black leading-snug text-white sm:text-lg">
                     {item.title}
                   </h3>
-                  <p className="absolute bottom-1 left-4 right-4 text-xs font-semibold text-white/80">{item.meta}</p>
+                  <p className="gcv-card-photo-text absolute bottom-2 left-4 right-4 text-[11px] font-semibold uppercase tracking-[0.06em] text-white/85">
+                    {item.meta}
+                  </p>
                 </Link>
               ))}
             </div>
           </section>
 
-          <section className="mt-10 rounded-[1.75rem] bg-white p-5 shadow-xl shadow-slate-200/80 md:p-8">
-            <div className="flex items-center justify-between gap-4">
+          <section className="mt-10 rounded-[1.75rem] border border-white/40 bg-white/90 p-5 shadow-xl shadow-slate-400/15 backdrop-blur-sm md:p-8">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <span className="inline-flex rounded-full bg-[#e58b55] px-3 py-1 text-[11px] font-black uppercase tracking-wide text-white">
+                <span className="inline-flex rounded-full bg-[#e58b55] px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-white sm:text-[11px]">
                   Blog da Chapada dos Veadeiros
                 </span>
-                <h2 className="mt-3 text-2xl font-medium tracking-tight text-slate-900 md:text-4xl">
+                <h2 className="mt-3 max-w-[18ch] text-balance text-2xl font-black leading-[1.12] text-slate-900 sm:max-w-none md:text-4xl">
                   Últimas Notícias da Chapada dos Veadeiros
                 </h2>
               </div>
-              <Link className="text-sm font-black text-cerrado-700" to="/blog">
+              <Link
+                className="shrink-0 text-xs font-extrabold uppercase tracking-[0.12em] text-cerrado-700 transition hover:text-[#df8350]"
+                to="/blog"
+              >
                 Ver Todos
               </Link>
             </div>
             <div className="mt-6 divide-y divide-slate-200">
               {latestPosts.map((post) => (
-                <Link key={post.href} to={post.href} className="block py-4">
-                  <h3 className="font-black text-slate-900">{post.title}</h3>
+                <Link key={post.href} to={post.href} className="block py-4 transition first:pt-1 hover:bg-slate-50/80">
+                  <h3 className="text-lg font-bold normal-case leading-snug tracking-tight text-slate-900">
+                    {post.title}
+                  </h3>
                   <p className="mt-1 text-sm text-slate-500">{post.excerpt}</p>
                 </Link>
               ))}
             </div>
           </section>
 
-          <section className="mt-5 grid gap-8 rounded-[1.75rem] bg-[#172f59] p-6 text-white shadow-xl shadow-slate-200/80 md:grid-cols-[0.85fr_1.15fr] md:p-8">
+          <section className="mt-5 grid gap-8 rounded-[1.75rem] border border-white/10 bg-gradient-to-br from-[#142a52] via-[#172f59] to-[#0f203f] p-6 text-white shadow-xl shadow-slate-950/25 md:grid-cols-[0.85fr_1.15fr] md:p-8">
             <div>
-              <span className="inline-flex rounded-full bg-[#e58b55] px-3 py-1 text-[11px] font-black uppercase tracking-wide text-white">
+              <span className="inline-flex rounded-full bg-[#e58b55] px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-white sm:text-[11px]">
                 Mapa interativo
               </span>
-              <h2 className="mt-4 text-3xl font-medium leading-tight tracking-tight md:text-5xl">
+              <h2 className="mt-4 max-w-[20ch] text-balance text-2xl font-black leading-[1.12] md:max-w-none md:text-4xl lg:text-5xl">
                 Explore a Chapada dos Veadeiros pelo mapa interativo
               </h2>
-              <p className="mt-4 text-sm leading-6 text-white/85">
+              <p className="mt-4 text-sm leading-relaxed text-white/85 md:text-[0.95rem]">
                 Compare trilhas, nível de dificuldade, distâncias, regiões e combine os melhores roteiros para planejar sua experiência antes da reserva.
               </p>
             </div>
@@ -816,15 +945,15 @@ export function Home() {
               )
             : null}
 
-          <section className="mt-10 rounded-[1.75rem] bg-white p-5 shadow-xl shadow-slate-200/80 md:p-8">
-            <div className="flex items-center justify-between gap-4">
+          <section className="mt-10 rounded-[1.75rem] border border-white/40 bg-white/90 p-5 shadow-xl shadow-slate-400/15 backdrop-blur-sm md:p-8">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <span className="inline-flex rounded-full bg-[#e58b55] px-3 py-1 text-[11px] font-black uppercase tracking-wide text-white">
+                <span className="inline-flex rounded-full bg-[#e58b55] px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-white sm:text-[11px]">
                   Instagram
                 </span>
               </div>
               <a
-                className="text-sm font-black text-[#c4744a]"
+                className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#c4744a] transition hover:text-[#a85a38]"
                 href="https://www.instagram.com/guiachapadaveadeiros/"
                 rel="noreferrer"
                 target="_blank"
@@ -867,7 +996,7 @@ export function Home() {
                     {instagramError ?? "As fotos do Instagram ainda não estão disponíveis."}
                   </p>
                   <a
-                    className="mt-4 inline-flex rounded-full bg-[#df8350] px-6 py-3 text-sm font-black text-white shadow-xl shadow-orange-200"
+                    className="mt-4 inline-flex rounded-full bg-[#df8350] px-6 py-3.5 text-xs font-extrabold uppercase tracking-[0.12em] text-white shadow-xl shadow-orange-200/80 transition hover:bg-[#c96a3a]"
                     href="https://www.instagram.com/guiachapadaveadeiros/"
                     rel="noreferrer"
                     target="_blank"
@@ -879,29 +1008,32 @@ export function Home() {
             )}
           </section>
 
-          <section className="mt-12 text-center">
-            <span className="inline-flex rounded-full bg-[#168f7a] px-4 py-2 text-[11px] font-black uppercase tracking-wide text-white">
+          <section className="mt-12 px-1 text-center sm:px-2">
+            <span className="inline-flex rounded-full bg-[#168f7a] px-4 py-2 text-[10px] text-white sm:text-[11px]">
               Ecoturismo
             </span>
-            <h2 className="mt-4 text-3xl font-medium tracking-tight text-slate-800">
-              <span className="text-[#e5a12d]">★</span> Avaliações dos viajantes
+            <h2 className="mt-4 text-2xl font-black text-slate-800 normal-case tracking-tight md:text-4xl">
+              <span className="text-[#e5a12d]" aria-hidden>
+                ★
+              </span>{" "}
+              Avaliações dos viajantes
             </h2>
             <p className="mt-2 text-sm text-slate-600">Experiências reais de quem viveu a Chapada dos Veadeiros.</p>
-            <div className="mt-6 flex items-center justify-center gap-3">
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <button
                 aria-label="Avaliações anteriores"
-                className="grid h-11 w-11 place-items-center rounded-full border-2 border-emerald-600/30 bg-white text-xl font-black text-emerald-700 shadow-sm transition hover:border-[#df8350] hover:text-[#df8350]"
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-full border-2 border-emerald-600/30 bg-white text-xl font-bold text-emerald-700 shadow-sm transition hover:border-[#df8350] hover:text-[#df8350]"
                 type="button"
                 onClick={goToPreviousReviewPage}
               >
                 ‹
               </button>
-              <span className="rounded-full bg-white px-4 py-2 text-xs font-bold text-slate-500 shadow-sm">
+              <span className="max-w-full rounded-full bg-white px-4 py-2 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-600 shadow-sm md:text-xs">
                 {reviewPage + 1} / {totalReviewPages} · 3 avaliações por vez
               </span>
               <button
                 aria-label="Próximas avaliações"
-                className="grid h-11 w-11 place-items-center rounded-full border-2 border-emerald-600/30 bg-white text-xl font-black text-emerald-700 shadow-sm transition hover:border-[#df8350] hover:text-[#df8350]"
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-full border-2 border-emerald-600/30 bg-white text-xl font-bold text-emerald-700 shadow-sm transition hover:border-[#df8350] hover:text-[#df8350]"
                 type="button"
                 onClick={goToNextReviewPage}
               >
@@ -910,19 +1042,27 @@ export function Home() {
             </div>
             <div className="mt-8 grid auto-rows-[440px] gap-5 md:grid-cols-3">
               {visibleReviews.map((review) => (
-                <article key={review.name} className="flex h-[440px] flex-col rounded-2xl bg-white p-8 text-left shadow-lg shadow-slate-200/80">
+                <article
+                  key={review.name}
+                  className="flex h-[440px] flex-col rounded-2xl border border-slate-100 bg-white p-7 text-left shadow-lg shadow-slate-200/90 md:p-8"
+                >
                   <div className="flex min-h-[112px] items-center gap-4">
-                    <img src={review.image} alt={review.name} className="h-20 w-20 rounded-full object-cover shadow-xl shadow-emerald-100" loading="lazy" />
-                    <div>
+                    <img
+                      src={review.image}
+                      alt={review.name}
+                      className="h-20 w-20 rounded-full object-cover shadow-lg shadow-emerald-100/80 ring-2 ring-white"
+                      loading="lazy"
+                    />
+                    <div className="min-w-0">
                       <p className="text-sm text-[#caa24b]">★★★★★</p>
-                      <h3 className="mt-1 text-lg font-medium text-slate-800">{review.name}</h3>
-                      <p className="text-xs font-bold text-slate-600">{review.city}</p>
-                      <span className="mt-3 inline-flex rounded-full bg-emerald-50 px-3 py-2 text-[10px] font-black uppercase tracking-wide text-cerrado-700">
+                      <h3 className="mt-1 text-lg font-bold normal-case tracking-tight text-slate-800">{review.name}</h3>
+                      <p className="text-xs font-semibold text-slate-600">{review.city}</p>
+                      <span className="mt-3 inline-flex rounded-full bg-emerald-50 px-3 py-2 text-[9px] text-cerrado-700">
                         {review.tour}
                       </span>
                     </div>
                   </div>
-                  <blockquote className="mt-8 flex-1 overflow-y-auto border-l-4 border-emerald-500 bg-slate-50 p-5 text-sm italic leading-7 text-slate-700">
+                  <blockquote className="mt-8 flex-1 overflow-y-auto border-l-4 border-emerald-500 bg-slate-50/90 p-5 text-sm not-italic leading-7 text-slate-700">
                     “{review.quote}”
                   </blockquote>
                 </article>

@@ -5,9 +5,13 @@ type StaticPageProps = {
   title: string;
   description: string;
   children?: ReactNode;
+  /** quando false, o conteúdo não usa a classe typography (ideal para formulários) */
+  prose?: boolean;
 };
 
-export function StaticPage({ title, description, children }: StaticPageProps) {
+export function StaticPage({ title, description, children, prose = true }: StaticPageProps) {
+  const bodyClass = prose ? "prose prose-lg mt-10 max-w-none" : "mt-10";
+
   return (
     <article className="mx-auto max-w-5xl px-4 py-16">
       <Seo title={title} description={description} canonical={window.location.pathname} />
@@ -16,7 +20,7 @@ export function StaticPage({ title, description, children }: StaticPageProps) {
       </p>
       <h1 className="mt-3 text-4xl font-black text-cerrado-900 md:text-6xl">{title}</h1>
       <p className="mt-5 max-w-3xl text-lg text-slate-700">{description}</p>
-      <div className="prose prose-lg mt-10 max-w-none">{children}</div>
+      <div className={bodyClass}>{children}</div>
     </article>
   );
 }

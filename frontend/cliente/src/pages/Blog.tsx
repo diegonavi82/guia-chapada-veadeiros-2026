@@ -50,11 +50,11 @@ export function Blog() {
                 />
               ) : null}
               <div className="p-6">
-              <p className="text-sm font-bold text-cerrado-500">Artigo</p>
+                <p className="text-sm font-bold text-cerrado-500">Artigo</p>
               <h2 className="mt-3 text-2xl font-black text-cerrado-900">{post.title}</h2>
-              <p className="mt-3 line-clamp-3 text-slate-600">
-                {post.excerpt || post.seoDescription || "Leia o artigo completo."}
-              </p>
+                <p className="mt-3 line-clamp-3 text-slate-600">
+                  {post.excerpt || post.seoDescription || "Leia o artigo completo."}
+                </p>
               </div>
             </Link>
         ))}

@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { SiteLayout } from "../layouts/SiteLayout";
 import { Article } from "../pages/Article";
 import { Blog } from "../pages/Blog";
+import { Contact } from "../pages/Contact";
 import { DynamicPage } from "../pages/DynamicPage";
 import { Home } from "../pages/Home";
 import { StaticPage } from "../pages/StaticPage";
@@ -31,10 +32,7 @@ export const router = createBrowserRouter([
           <StaticPage title="FAQ" description="Perguntas frequentes com schema FAQ preparado." />
         ),
       },
-      {
-        path: "/contato",
-        element: <StaticPage title="Contato" description="Fale com o Guia Chapada dos Veadeiros." />,
-      },
+      { path: "/contato", element: <Contact /> },
       {
         path: "/busca",
         element: <StaticPage title="Busca" description="Busque artigos, atrativos e passeios." />,

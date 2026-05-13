@@ -1,4 +1,5 @@
 import type { FastifyInstance } from "fastify";
+import { postContact } from "../controllers/contact.controller.js";
 import {
   getPageBySlug,
   getPostBySlug,
@@ -11,6 +12,7 @@ import { listInstagramMedia } from "../controllers/instagram.controller.js";
 
 export async function publicRoutes(app: FastifyInstance) {
   app.get("/health", async () => ({ ok: true }));
+  app.post("/contact", postContact);
   app.get("/posts", listPosts);
   app.get("/posts/:slug", getPostBySlug);
   app.get("/pages", listPages);
