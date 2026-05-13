@@ -2,6 +2,8 @@
 
 Nova plataforma para substituir o frontend WordPress atual sem alterar o site existente durante a migracao.
 
+Backlog cooperativo e lembrete entre sessões / agentes: [AGENTS.md](./AGENTS.md).
+
 ## Stack
 
 - Frontend cliente: React, Vite, TypeScript, TailwindCSS e React Router
