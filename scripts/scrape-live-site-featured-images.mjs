@@ -1,7 +1,7 @@
 /**
  * Para cada página/post publicado no banco, baixa do site ao vivo (mesmo slug)
- * a imagem principal da matéria e grava em frontend/cliente/public/wp-content/uploads/...
- * Atualiza featured_image para o caminho local (/wp-content/uploads/...).
+ * a imagem principal da matéria e grava em frontend/cliente/public/imagens/.
+ * Atualiza featured_image para o caminho local (/imagens/<arquivo>).
  *
  * Uso:
  *   node scripts/scrape-live-site-featured-images.mjs
@@ -107,9 +107,9 @@ function pickImageCandidates(html) {
 }
 
 /**
- * URLs /gcv-home/* no site ao vivo retornam 404; copiamos do espelho em public/imagens quando existir.
+ * URLs /gcv-home/* no site ao vivo retornam 404; usa o arquivo já em public/imagens quando existir.
  */
-async function copyGcvHomeFromImagensRepo(url) {
+async function resolveGcvHomeFromImagensRepo(url) {
   const abs = absolutize(url);
   if (!abs) return null;
   const m = abs.match(/\/wp-content\/uploads\/gcv-home\/([^?#]+)$/i);
@@ -117,21 +117,19 @@ async function copyGcvHomeFromImagensRepo(url) {
   const base = m[1];
   const src = path.join(PUBLIC, "imagens", base);
   if (!(await fileExists(src))) return null;
-  const dest = path.join(PUBLIC, "wp-content", "uploads", "gcv-home", base);
-  await fs.mkdir(path.dirname(dest), { recursive: true });
-  await fs.copyFile(src, dest);
-  return `/wp-content/uploads/gcv-home/${base}`;
+  return `/imagens/${base}`;
 }
 
 async function tryDownloadFirstWorking(candidates) {
   for (const url of candidates) {
     const rel = uploadsRelativeFromAbsolute(url);
     if (!rel) continue;
-    const dest = path.join(PUBLIC, rel.replace(/^\//, ""));
-    if (await fileExists(dest)) return rel;
+    const dest = path.join(PUBLIC, "imagens", path.basename(rel));
+    const flatRel = `/imagens/${path.basename(rel)}`;
+    if (await fileExists(dest)) return flatRel;
     const saved = await downloadImage(url);
     if (saved) return saved;
-    const gcv = await copyGcvHomeFromImagensRepo(url);
+    const gcv = await resolveGcvHomeFromImagensRepo(url);
     if (gcv) return gcv;
   }
   return null;
@@ -159,9 +157,10 @@ async function fetchText(url) {
 async function downloadImage(fullUrl) {
   const rel = uploadsRelativeFromAbsolute(fullUrl);
   if (!rel) return null;
-  const dest = path.join(PUBLIC, rel.replace(/^\//, ""));
+  const flatRel = `/imagens/${path.basename(rel)}`;
+  const dest = path.join(PUBLIC, "imagens", path.basename(rel));
   if (await fileExists(dest)) {
-    return rel;
+    return flatRel;
   }
   await fs.mkdir(path.dirname(dest), { recursive: true });
   const res = await fetch(absolutize(fullUrl), { headers: { "User-Agent": UA }, redirect: "follow" });
@@ -171,7 +170,7 @@ async function downloadImage(fullUrl) {
   }
   const buf = Buffer.from(await res.arrayBuffer());
   await fs.writeFile(dest, buf);
-  return rel;
+  return flatRel;
 }
 
 async function main() {
@@ -228,7 +227,7 @@ async function main() {
 
     if (dryRun) {
       const first = uploadsRelativeFromAbsolute(candidates[0]);
-      console.log(first ? `→ ${first}` : "URL fora de uploads");
+      console.log(first ? `→ /imagens/${path.basename(first)}` : "URL fora de uploads");
       ok += 1;
       await sleep(450);
       continue;

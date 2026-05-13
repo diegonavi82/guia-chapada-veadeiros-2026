@@ -66,3 +66,52 @@ export async function apiPostContact<TBody extends object, TRes>(path: string, b
 
   return response.json() as Promise<TRes>;
 }
+
+export type WaitlistPostResult =
+  | { ok: true; message: string }
+  | {
+      ok: false;
+      message: string;
+      duplicateEmail?: boolean;
+      duplicatePhone?: boolean;
+    };
+
+/** Lista de espera do hero — não lança em 409; interpreta JSON da API. */
+export async function apiPostWaitlist(body: {
+  email?: string;
+  phone?: string;
+}): Promise<WaitlistPostResult> {
+  const response = await fetch(`${apiBaseUrl}/waitlist`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  let data: Record<string, unknown> = {};
+  try {
+    data = (await response.json()) as Record<string, unknown>;
+  } catch {
+    /* ignore */
+  }
+
+  const message =
+    typeof data.message === "string" && data.message.length > 0
+      ? data.message
+      : response.ok
+        ? "Cadastro recebido."
+        : "Não foi possível enviar agora. Tente novamente.";
+
+  if (response.ok && data.ok === true) {
+    return { ok: true, message };
+  }
+
+  return {
+    ok: false,
+    message,
+    duplicateEmail: Boolean(data.duplicateEmail),
+    duplicatePhone: Boolean(data.duplicatePhone),
+  };
+}

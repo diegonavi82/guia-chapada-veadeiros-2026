@@ -1,17 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
+import { WATERFALL_MAP_IMAGE_URL, waterfallMapHotspots } from "../config/waterfallMap";
 import { wpUploadsAssets as Wp } from "../config/wpUploadsAssets";
+import { WaitlistModal } from "../components/WaitlistModal";
 import { Seo } from "../seo/Seo";
 import { apiGet } from "../services/api";
 
-const mapImageUrl = Wp.mapaCachoeiras2020;
+const mapImageUrl = WATERFALL_MAP_IMAGE_URL;
 const whatsappUrl =
   "https://api.whatsapp.com/send?phone=5562982506891&text=*Quero%20montar%20um%20roteiro%20na%20Chapada*";
 
 type HeroCta =
   | { kind: "whatsapp"; label: string }
-  | { kind: "router"; to: string; label: string };
+  | { kind: "router"; to: string; label: string }
+  | { kind: "waitlist"; label: string };
 
 type HeroSlideCopy = {
   badge: string;
@@ -37,11 +40,11 @@ const HERO_SLIDES: HeroSlide[] = [
   {
     image: Wp.almecegas,
     badge: "Em breve",
-    title: "Sua expedição começa na tela",
+    title: "Seu próximo destino começará aqui",
     lead:
-      "Preparamos a plataforma de vendas do Guia Chapada Veadeiros para você escolher roteiros, datas e experiências com o mesmo olhar local — tudo em um fluxo digital limpo, seguro e pensado para quem viaja com intensidade.",
-    sub: "Seja avisado em primeira mão quando abrirmos as reservas e garanta prioridade para montar seu itinerário.",
-    cta: { kind: "router", to: "/contato", label: "Quero entrar na lista" },
+      "Em breve iniciaremos a plataforma de vendas online para você escolher seu próprio roteiro, num fluxo digital limpo, seguro e pensado para quem viaja com excelência.",
+    sub: "Seja avisado em primeira mão quando abrirmos as reservas e garanta prioridade para montar seu roteiro",
+    cta: { kind: "waitlist", label: "Quero entrar na lista" },
   },
 ];
 
@@ -320,157 +323,14 @@ const reviews = [
 
 const reviewsPerPage = 3;
 
-type MapViewport = "mobile" | "notebook" | "desktop";
-
-type MapBox = {
-  l: number;
-  t: number;
-  w: number;
-  h: number;
-};
-
-type MapHotspot = {
-  label: string;
-  href: string;
-  notebook: MapBox;
-  desktop: MapBox;
-};
-
-const mapHotspots: MapHotspot[] = [
-  {
-    label: "Parque Nacional da Chapada dos Veadeiros",
-    href: "/parque-nacional-chapada-veadeiros-saltos-rio-preto-sao-jorge",
-    notebook: { l: 43, t: 42, w: 18, h: 12 },
-    desktop: { l: 43, t: 42, w: 18, h: 12 },
-  },
-  {
-    label: "Complexo de Cachoeiras do Rio da Prata",
-    href: "/cachoeira-complexo-rio-prata-guia-chapada-veadeiros-cavalcante",
-    notebook: { l: 26, t: 6, w: 9, h: 5 },
-    desktop: { l: 26, t: 6, w: 9, h: 5 },
-  },
-  {
-    label: "Mirante da Janela e Cachoeira do Abismo",
-    href: "/mirante-janela-cachoeira-abismo-guia-chapada-veadeiros-sao-jorge",
-    notebook: { l: 20, t: 58, w: 10, h: 5 },
-    desktop: { l: 20, t: 58, w: 10, h: 5 },
-  },
-  {
-    label: "Parque Nacional da Chapada dos Veadeiros - Saltos do Rio Preto",
-    href: "/parque-nacional-chapada-veadeiros-saltos-rio-preto-sao-jorge",
-    notebook: { l: 26, t: 45, w: 10, h: 6 },
-    desktop: { l: 26, t: 45, w: 10, h: 6 },
-  },
-  {
-    label: "Parque Nacional da Chapada dos Veadeiros - Cânions e Cariocas",
-    href: "/parque-nacional-chapada-veadeiros-canions-carioquinhas-sao-jorge",
-    notebook: { l: 37, t: 50, w: 11, h: 6 },
-    desktop: { l: 37, t: 50, w: 11, h: 6 },
-  },
-  {
-    label: "Vale da Lua",
-    href: "/vale-lua-guia-chapada-veadeiros-sao-jorge",
-    notebook: { l: 36, t: 63, w: 8, h: 5 },
-    desktop: { l: 36, t: 63, w: 8, h: 5 },
-  },
-  {
-    label: "Cataratas dos Couros",
-    href: "/cataratas-dos-couros-guia-chapada-veadeiros-alto-paraiso",
-    notebook: { l: 35, t: 72, w: 10, h: 5 },
-    desktop: { l: 35, t: 72, w: 10, h: 5 },
-  },
-  {
-    label: "Cachoeira do Segredo",
-    href: "/cachoeira-segredo-guia-chapada-veadeiros-sao-jorge",
-    notebook: { l: 28, t: 86, w: 8, h: 5 },
-    desktop: { l: 28, t: 86, w: 8, h: 5 },
-  },
-  {
-    label: "Cachoeira Santa Bárbara",
-    href: "/cachoeira-santa-barbara-guia-chapada-veadeiros-cavalcante",
-    notebook: { l: 51, t: 10, w: 8, h: 5 },
-    desktop: { l: 51, t: 10, w: 8, h: 5 },
-  },
-  {
-    label: "Cachoeira das Loquinhas",
-    href: "/cachoeira-loquinhas-guia-chapada-veadeiros-alto-paraiso",
-    notebook: { l: 62, t: 51, w: 8, h: 5 },
-    desktop: { l: 62, t: 51, w: 8, h: 5 },
-  },
-  {
-    label: "Cachoeira Poço Encantado",
-    href: "/cachoeira-poco-encantado-guia-chapada-veadeiros-teresina-de-goias",
-    notebook: { l: 72, t: 39, w: 10, h: 5 },
-    desktop: { l: 72, t: 39, w: 10, h: 5 },
-  },
-  {
-    label: "Cachoeiras Almécegas e Poço São Bento",
-    href: "/cachoeira-almecegas-poco-sao-bento-guia-chapada-veadeiros",
-    notebook: { l: 49, t: 62, w: 11, h: 5 },
-    desktop: { l: 49, t: 62, w: 11, h: 5 },
-  },
-  {
-    label: "Cachoeira Anjos e Arcanjos",
-    href: "/cachoeira-anjos-arcanjos-guia-chapada-veadeiros-alto-paraiso",
-    notebook: { l: 77, t: 46, w: 10, h: 5 },
-    desktop: { l: 77, t: 46, w: 10, h: 5 },
-  },
-  {
-    label: "Cachoeira dos Cristais",
-    href: "/cachoeira-cristais-guia-chapada-veadeiros-alto-paraiso",
-    notebook: { l: 60, t: 46, w: 8, h: 5 },
-    desktop: { l: 60, t: 46, w: 8, h: 5 },
-  },
-  {
-    label: "Cachoeira Cordovil e Poço Esmeralda",
-    href: "/cachoeira-cordovil-poco-esmeralda-guia-chapada-veadeiros",
-    notebook: { l: 42, t: 59, w: 8, h: 5 },
-    desktop: { l: 42, t: 59, w: 8, h: 5 },
-  },
-  {
-    label: "Cachoeiras dos Macaquinhos",
-    href: "/cachoeira-macaquinhos-guia-chapada-veadeiros-sao-joao-alianca",
-    notebook: { l: 86, t: 66, w: 10, h: 5 },
-    desktop: { l: 86, t: 66, w: 10, h: 5 },
-  },
-  {
-    label: "Cachoeira do Macaco",
-    href: "/cachoeira-macacao-guia-chapada-veadeiros-sao-joao-alianca",
-    notebook: { l: 78, t: 57, w: 8, h: 5 },
-    desktop: { l: 78, t: 57, w: 8, h: 5 },
-  },
-  {
-    label: "Cachoeira do Label",
-    href: "/cachoeira-label-guia-chapada-veadeiros-sao-joao-alianca",
-    notebook: { l: 80, t: 76, w: 7, h: 5 },
-    desktop: { l: 80, t: 76, w: 7, h: 5 },
-  },
-];
-
 function shuffleReviews() {
   return [...reviews].sort(() => Math.random() - 0.5);
-}
-
-function getMapViewport(): MapViewport {
-  if (typeof window === "undefined") {
-    return "desktop";
-  }
-
-  if (window.matchMedia("(max-width: 767px)").matches) {
-    return "mobile";
-  }
-
-  if (window.matchMedia("(min-width: 1280px)").matches) {
-    return "desktop";
-  }
-
-  return "notebook";
 }
 
 export function Home() {
   const [reviewPage, setReviewPage] = useState(0);
   const [isMapOpen, setIsMapOpen] = useState(false);
-  const [mapViewport, setMapViewport] = useState<MapViewport>(() => getMapViewport());
+  const [waitlistOpen, setWaitlistOpen] = useState(false);
   const [instagramPhotos, setInstagramPhotos] = useState<InstagramMediaItem[]>([]);
   const [isInstagramLoading, setIsInstagramLoading] = useState(true);
   const [instagramError, setInstagramError] = useState<string | null>(null);
@@ -478,7 +338,6 @@ export function Home() {
   const heroPointerDragRef = useRef({ pointerId: -1, startX: 0, locked: false });
   const shuffledReviews = useMemo(() => shuffleReviews(), []);
   const totalReviewPages = Math.ceil(shuffledReviews.length / reviewsPerPage);
-  const visibleMapHotspots = mapViewport === "mobile" ? [] : mapHotspots;
   const visibleReviews = Array.from({ length: reviewsPerPage }, (_, index) => {
     const reviewIndex = (reviewPage * reviewsPerPage + index) % shuffledReviews.length;
 
@@ -520,17 +379,6 @@ export function Home() {
 
     return () => window.clearInterval(intervalId);
   }, [totalReviewPages]);
-
-  useEffect(() => {
-    function handleResize() {
-      setMapViewport(getMapViewport());
-    }
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   useEffect(() => {
     if (!isMapOpen) {
@@ -667,7 +515,7 @@ export function Home() {
       <section className="official-home-shell px-4 pb-16 pt-9">
         <div className="mx-auto max-w-[1180px]">
           <div
-            className="relative cursor-grab touch-pan-y overflow-hidden rounded-[1.8rem] bg-[#0f2420] shadow-2xl active:cursor-grabbing"
+            className="relative aspect-video min-h-[300px] w-full cursor-grab touch-pan-y overflow-hidden rounded-[1.8rem] bg-[#0f2420] shadow-2xl active:cursor-grabbing sm:min-h-[340px]"
             role="region"
             aria-roledescription="Carrossel"
             aria-label={`Destaque ${heroImageIndex + 1} de ${HERO_SLIDES.length}`}
@@ -689,7 +537,7 @@ export function Home() {
               aria-hidden
             />
             <div
-              className="gcv-hero-overlay-text relative z-[1] px-5 py-16 text-white sm:px-8 md:px-12 md:py-24 lg:py-28"
+              className="gcv-hero-overlay-text absolute inset-0 z-[1] flex flex-col justify-center overflow-hidden px-5 py-14 text-white sm:px-8 sm:py-16 md:px-12 md:py-20 lg:py-24"
             >
               <button
                 type="button"
@@ -748,6 +596,15 @@ export function Home() {
                     <WhatsAppGlyph className="h-5 w-5 shrink-0" />
                     {heroSlide.cta.label}
                   </a>
+                ) : heroSlide.cta.kind === "waitlist" ? (
+                  <button
+                    type="button"
+                    className="gcv-hero-line mt-7 inline-flex items-center justify-center rounded-full bg-[#e58b55] px-6 py-3.5 text-xs font-extrabold uppercase tracking-[0.12em] text-white shadow-xl shadow-orange-950/40 transition hover:bg-[#d97941] md:text-sm"
+                    style={{ animationDelay: `${heroAnim.ctaStartMs}ms` }}
+                    onClick={() => setWaitlistOpen(true)}
+                  >
+                    {heroSlide.cta.label}
+                  </button>
                 ) : (
                   <Link
                     className="gcv-hero-line mt-7 inline-flex items-center justify-center rounded-full bg-[#e58b55] px-6 py-3.5 text-xs font-extrabold uppercase tracking-[0.12em] text-white shadow-xl shadow-orange-950/40 transition hover:bg-[#d97941] md:text-sm"
@@ -901,35 +758,27 @@ export function Home() {
                   <div className="gcv-map-lightbox__inner">
                     <figure className="gcv-map-lightbox__figure">
                       <img src={mapImageUrl} alt="Mapa de cachoeiras da Chapada dos Veadeiros" />
-                      {visibleMapHotspots.length > 0 ? (
-                        <div className="gcv-map-lightbox__hotspots">
-                          {visibleMapHotspots.map((spot) => {
-                            const box = spot[mapViewport === "desktop" ? "desktop" : "notebook"];
-
-                            return (
-                              <Link
-                                key={`${spot.label}-${mapViewport}`}
-                                aria-label={spot.label}
-                                className="gcv-map-lightbox__hotspot"
-                                style={{
-                                  height: `${box.h}%`,
-                                  left: `${box.l}%`,
-                                  top: `${box.t}%`,
-                                  width: `${box.w}%`,
-                                }}
-                                title={spot.label}
-                                to={spot.href}
-                                onClick={() => setIsMapOpen(false)}
-                              />
-                            );
-                          })}
-                        </div>
-                      ) : null}
+                      <div className="gcv-map-lightbox__hotspots">
+                        {waterfallMapHotspots.map((spot) => (
+                          <Link
+                            key={spot.href}
+                            aria-label={spot.label}
+                            className="gcv-map-lightbox__hotspot"
+                            style={{
+                              height: `${spot.box.h}%`,
+                              left: `${spot.box.l}%`,
+                              top: `${spot.box.t}%`,
+                              width: `${spot.box.w}%`,
+                            }}
+                            title={spot.label}
+                            to={spot.href}
+                            onClick={() => setIsMapOpen(false)}
+                          />
+                        ))}
+                      </div>
                     </figure>
                     <p className="gcv-map-lightbox__mode">
-                      {mapViewport === "mobile"
-                        ? "Mapa ampliado. Links desativados no celular."
-                        : `Mapa em modo ${mapViewport === "desktop" ? "desktop" : "notebook"}. Clique no nome da cachoeira.`}
+                      Toque ou clique no nome do atrativo no mapa para abrir o guia.
                     </p>
                   </div>
                   <button
@@ -944,6 +793,8 @@ export function Home() {
                 document.body,
               )
             : null}
+
+          <WaitlistModal onClose={() => setWaitlistOpen(false)} open={waitlistOpen} />
 
           <section className="mt-10 rounded-[1.75rem] border border-white/40 bg-white/90 p-5 shadow-xl shadow-slate-400/15 backdrop-blur-sm md:p-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

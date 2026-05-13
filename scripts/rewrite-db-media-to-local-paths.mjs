@@ -14,9 +14,20 @@ function required(name) {
 /** Converte URLs absolutas de mídia para caminhos locais servidos em public/. */
 function rewriteMediaUrls(value) {
   if (!value) return value;
-  return String(value)
-    .replace(/https?:\/\/[^"'\s<>)]+\/wp-content\/uploads\/([^"'\s<>)]+)/gi, "/wp-content/uploads/$1")
+
+  let out = String(value)
+    .replace(/https?:\/\/[^"'\s<>)]+\/wp-content\/uploads\/([^"'\s<>)]+)/gi, (_whole, rest) => {
+      const base = String(rest).split("/").pop();
+      return base ? `/imagens/${base}` : `/wp-content/uploads/${rest}`;
+    })
     .replace(/https?:\/\/[^"'\s<>)]+\/imagens\/([^"'\s<>)?#]+)/gi, "/imagens/$1");
+
+  out = out.replace(/\/wp-content\/uploads\/[^"'\s<>)]+/gi, (fullPath) => {
+    const base = fullPath.split("/").pop();
+    return base ? `/imagens/${base}` : fullPath;
+  });
+
+  return out;
 }
 
 async function rewriteTableColumn(connection, table, idColumn, column) {
@@ -46,4 +57,4 @@ await rewriteTableColumn(connection, "media", "id", "url");
 await rewriteTableColumn(connection, "seo_metadata", "id", "og_image");
 
 await connection.end();
-console.log("URLs de mídia apontando para caminhos locais (/wp-content/uploads/... e /imagens/...).");
+console.log("URLs de mídia apontando para caminhos locais (/imagens/...).");

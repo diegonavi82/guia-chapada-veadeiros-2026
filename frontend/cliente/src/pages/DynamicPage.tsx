@@ -1,9 +1,75 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import {
+  AttractionPhotoGallery,
+  type AttractionGalleryItem,
+} from "../components/AttractionPhotoGallery";
+import { WaterfallRegionMap } from "../components/WaterfallRegionMap";
+import attractionGalleriesManifest from "../data/attractionGalleries.json";
+import { pageSlugHasWaterfallMap } from "../config/waterfallMap";
 import { detailImageByPageSlug } from "../config/wpUploadsAssets";
 import { Seo } from "../seo/Seo";
 import { apiGet } from "../services/api";
 import { rewriteHtmlMediaUrls, toPublicAssetUrl } from "../utils/localMediaUrl";
+
+function galleryItemsForSlug(slug: string): AttractionGalleryItem[] {
+  const row = (attractionGalleriesManifest as Record<string, unknown>)[slug];
+  return Array.isArray(row) ? (row as AttractionGalleryItem[]) : [];
+}
+
+/**
+ * O conteúdo migrado do WordPress ainda traz a galeria Avada Fusion no HTML (título, parágrafo e figuras).
+ * Quando já renderizamos `AttractionPhotoGallery` via JSON, removemos esse bloco para não duplicar.
+ */
+function stripLegacyFusionGalleryFromHtml(html: string): string {
+  if (!html.trim()) {
+    return html;
+  }
+
+  try {
+    const doc = new DOMParser().parseFromString(`<div id="gcv-gallery-strip">${html}</div>`, "text/html");
+    const root = doc.getElementById("gcv-gallery-strip");
+    if (!root) {
+      return html;
+    }
+
+    root.querySelectorAll(".fusion-gallery").forEach((el) => el.remove());
+    root.querySelectorAll(".fusion-recent-works").forEach((el) => el.remove());
+    root.querySelectorAll("[class*='fusion-gallery-wrapper']").forEach((el) => el.remove());
+
+    root.querySelectorAll("[class*='fusion-gallery-image']").forEach((el) => {
+      const col = el.closest(".fusion-layout-column");
+      if (col && root.contains(col)) {
+        col.remove();
+      } else {
+        const wrap = el.closest("div") ?? el;
+        if (wrap.parentElement) {
+          wrap.remove();
+        }
+      }
+    });
+
+    root.querySelectorAll("h2").forEach((h2) => {
+      const normalized = h2.textContent?.replace(/\s+/g, " ").trim().toLowerCase() ?? "";
+      if (normalized !== "galeria de fotos") {
+        return;
+      }
+
+      let next = h2.nextElementSibling;
+      if (next?.tagName === "P") {
+        const pText = next.textContent ?? "";
+        if (/gui oficial|textos alternativos|acessibilidade|seo/i.test(pText)) {
+          next.remove();
+        }
+      }
+      h2.remove();
+    });
+
+    return root.innerHTML;
+  } catch {
+    return html;
+  }
+}
 
 type PageData = {
   id: number;
@@ -118,7 +184,7 @@ function splitCompreThenContrate(content: string, buttons: ReturnType<typeof lis
 
   const sidebarInfo = content.slice(sliceCompre.index + sliceCompre.html.length, sliceContrate.index).trim();
   const ctaHtml = sliceContrate.html;
-  const mainContent = `${sliceCompre.html}\n${content.slice(sliceContrate.index + sliceContrate.html.length).trim()}`;
+  const mainContent = content.slice(sliceContrate.index + sliceContrate.html.length).trim();
 
   return { sidebarInfo, ctaHtml, mainContent };
 }
@@ -328,7 +394,11 @@ export function DynamicPage() {
   const detailContent = prepareDetailContent(page.content, firstImage?.tag);
   const detailParts = splitDetailContent(detailContent);
   const sidebarLines = getSidebarLines(detailParts.sidebarInfo);
-  const mainHtml = rewriteHtmlMediaUrls(detailParts.mainContent);
+  let mainHtml = rewriteHtmlMediaUrls(detailParts.mainContent);
+  const galleryItems = galleryItemsForSlug(page.slug);
+  if (galleryItems.length > 0) {
+    mainHtml = stripLegacyFusionGalleryFromHtml(mainHtml);
+  }
   const ogImage = toPublicAssetUrl(page.featuredImage) ?? toPublicAssetUrl(detailImage) ?? undefined;
 
   const hasSidebarColumn =
@@ -388,6 +458,14 @@ export function DynamicPage() {
             </div>
           )}
         </section>
+
+        {galleryItems.length > 0 ? (
+          <AttractionPhotoGallery pageTitle={page.title} items={galleryItems} />
+        ) : null}
+
+        {pageSlugHasWaterfallMap(page.slug) ? (
+          <WaterfallRegionMap activePath={`/${page.slug}`} />
+        ) : null}
       </div>
     </article>
   );

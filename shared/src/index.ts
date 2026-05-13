@@ -1,3 +1,11 @@
+export {
+  WATERFALL_MAP_HOTSPOTS,
+  WATERFALL_MAP_PAGE_SLUGS,
+  pageSlugHasWaterfallMap,
+  type MapBox,
+  type WaterfallMapHotspotDef,
+} from "./waterfallMap";
+
 export type SeoMetadata = {
   title: string;
   description: string;

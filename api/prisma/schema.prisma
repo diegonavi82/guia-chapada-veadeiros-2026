@@ -168,6 +168,16 @@ model Redirect {
   @@map("redirects")
 }
 
+/** Lista de espera da plataforma de vendas (hero “Em breve”). Chave composta email+telefone (strings normalizadas). */
+model WaitlistLead {
+  email     String   @default("") @db.VarChar(255)
+  phone     String   @default("") @db.VarChar(64)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([email, phone])
+  @@map("waitlist_leads")
+}
+
 model Setting {
   id        Int      @id @default(autoincrement())
   key       String   @unique

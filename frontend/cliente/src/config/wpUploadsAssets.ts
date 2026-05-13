@@ -1,22 +1,21 @@
 /**
- * Caminhos públicos das fotos migradas do WordPress (pasta
- * `frontend/cliente/public/wp-content/uploads/...`).
- * Evita placeholders idênticos em `/imagens/*.jpg`.
+ * Caminhos públicos das fotos estáticas em `frontend/cliente/public/imagens/`.
  */
 export const wpUploadsAssets = {
   /** Logo do header (WP uploads, mesmo arquivo do site ao vivo). */
-  siteLogo: "/wp-content/uploads/2024/05/Logo-Guia-Chapada-Veadeiros-2024.jpg",
-  parqueNacionalSalto:
-    "/wp-content/uploads/2019/09/parque-nacional-guia-chapada-veadeiros-saltos-rio-preto-garimpao.jpg",
-  almecegas: "/wp-content/uploads/2019/09/cachoeira-almecegas-guia-chapada-veadeiros-alto-paraiso-10.jpg",
-  valeLua: "/wp-content/uploads/2019/09/vale-lua-guia-chapada-veadeiros-sao-jorge-1.jpg",
-  couros: "/wp-content/uploads/2019/10/cataratas-couros-guia-chapada-veadeiros-alto-paraiso-11.jpg",
-  santaBarbara: "/wp-content/uploads/2019/10/cachoeira-santa-barbara-guia-chapada-veadeiros-cavalcante.jpg",
-  segredo: "/wp-content/uploads/2019/10/cachoeira-segredo-guia-chapada-veadeiros-sao-jorge-10.jpg",
-  cristais: "/wp-content/uploads/2019/11/cachoeira-cristais-veu-noiva-guia-chapada-veadeiros-alto-paraiso.jpg",
-  pocoEncantado: "/wp-content/uploads/2019/10/cachoeira-poco-encantado-guia-chapada-veadeiros-teresina-4.jpg",
-  macaquinhos: "/wp-content/uploads/2019/11/cachoeira-macaquinhos-guia-chapada-veadeiros-6.jpg",
-  mapaCachoeiras2020: "/wp-content/uploads/2020/01/guia-chapada-veadeiros-mapa-cachoeiras-2020.jpg",
+  siteLogo: "/imagens/Logo-Guia-Chapada-Veadeiros-2024.jpg",
+  parqueNacionalSalto: "/imagens/parque-nacional-guia-chapada-veadeiros-saltos-rio-preto-garimpao.jpg",
+  almecegas: "/imagens/cachoeira-almecegas-guia-chapada-veadeiros-alto-paraiso-10.jpg",
+  valeLua: "/imagens/vale-lua-guia-chapada-veadeiros-sao-jorge-1.jpg",
+  couros: "/imagens/cataratas-couros-guia-chapada-veadeiros-alto-paraiso-11.jpg",
+  santaBarbara: "/imagens/cachoeira-santa-barbara-guia-chapada-veadeiros-cavalcante.jpg",
+  segredo: "/imagens/cachoeira-segredo-guia-chapada-veadeiros-sao-jorge-10.jpg",
+  cristais: "/imagens/cachoeira-cristais-veu-noiva-guia-chapada-veadeiros-alto-paraiso.jpg",
+  pocoEncantado: "/imagens/cachoeira-poco-encantado-guia-chapada-veadeiros-teresina-4.jpg",
+  macaquinhos: "/imagens/cachoeira-macaquinhos-guia-chapada-veadeiros-6.jpg",
+  /** Mesma arte do mapa interativo em produção (`imagem` + `<map>` em guiachapadaveadeiros.com). */
+  mapaCachoeiras2022: "/imagens/cachoeiras-guia-chapada-veadeiros-2022.jpg",
+  mapaCachoeiras2020: "/imagens/guia-chapada-veadeiros-mapa-cachoeiras-2020.jpg",
 } as const;
 
 /** Destaque por slug de página (fallback quando a API não tem featured_image). */

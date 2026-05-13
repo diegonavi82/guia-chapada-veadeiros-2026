@@ -1,5 +1,6 @@
 import type { FastifyRequest } from "fastify";
 import { z } from "zod";
+import { WATERFALL_MAP_PAGE_SLUGS } from "../constants/waterfallMapPageSlugs.js";
 import { prisma } from "../utils/prisma.js";
 
 const paginationSchema = z.object({
@@ -53,33 +54,20 @@ export async function listPages() {
   });
 }
 
-/** Listagem leve para o site: páginas + produtos (sem HTML longo). */
+/** Listagem leve para /atrativos: só páginas ligadas ao mapa oficial (sem produtos/vendas). */
 export async function listAttractionsCatalog() {
-  const [pages, products] = await Promise.all([
-    prisma.page.findMany({
-      where: { status: "PUBLISHED" },
-      select: {
-        slug: true,
-        title: true,
-        excerpt: true,
-        featuredImage: true,
-      },
-      orderBy: { title: "asc" },
-    }),
-    prisma.product.findMany({
-      where: { status: "PUBLISHED" },
-      select: {
-        slug: true,
-        title: true,
-        shortDescription: true,
-        featuredImage: true,
-        price: true,
-      },
-      orderBy: { title: "asc" },
-    }),
-  ]);
+  const pages = await prisma.page.findMany({
+    where: { status: "PUBLISHED", slug: { in: [...WATERFALL_MAP_PAGE_SLUGS] } },
+    select: {
+      slug: true,
+      title: true,
+      excerpt: true,
+      featuredImage: true,
+    },
+    orderBy: { title: "asc" },
+  });
 
-  return { pages, products };
+  return { pages, products: [] };
 }
 
 export async function getPageBySlug(request: FastifyRequest) {

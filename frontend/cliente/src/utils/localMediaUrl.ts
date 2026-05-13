@@ -1,15 +1,30 @@
 /**
- * Converte URLs de mídia migradas (WordPress, /imagens, R2) em caminhos sob
- * `public/` (`/wp-content/uploads/...` ou `/imagens/...`).
+ * Converte URLs de mídia migradas (WordPress → pasta única, /imagens, R2) em caminhos sob
+ * `public/` (`/imagens/<arquivo>`).
  *
- * Opcional: `VITE_PUBLIC_MEDIA_BASE` (ex.: https://www.guiachapadaveadeiros.com)
- * prefixa esses caminhos quando os arquivos ainda não foram copiados para `public/`.
+ * Caminhos legados `/wp-content/uploads/ano/mês/arquivo` viram `/imagens/arquivo`.
+ *
+ * Opcional: `VITE_PUBLIC_MEDIA_BASE` prefixa `/imagens/...` quando os arquivos ainda
+ * não estão em `public/` (fallback temporário ao site ao vivo).
  */
 
 const mediaBase = (import.meta.env.VITE_PUBLIC_MEDIA_BASE ?? "").replace(/\/$/, "");
 
+/** Migração: uploads WP em árvore por ano → um único diretório público. */
+function wpUploadsPathToImagens(localPath: string): string {
+  const trimmed = localPath.trim();
+  if (!trimmed.startsWith("/wp-content/uploads/")) {
+    return trimmed;
+  }
+
+  const parts = trimmed.split("/").filter(Boolean);
+  const file = parts[parts.length - 1];
+
+  return file ? `/imagens/${file}` : trimmed;
+}
+
 function shouldPrefixWithMediaBase(path: string): boolean {
-  return path.startsWith("/imagens/") || path.startsWith("/wp-content/");
+  return path.startsWith("/imagens/");
 }
 
 function applyMediaBase(path: string): string {
@@ -24,12 +39,12 @@ function normalizeToLocalPath(url: string): string {
   const trimmed = url.trim();
 
   if (trimmed.startsWith("/") && !trimmed.startsWith("//")) {
-    return trimmed;
+    return wpUploadsPathToImagens(trimmed);
   }
 
   const uploadsIdx = trimmed.indexOf("/wp-content/uploads/");
   if (uploadsIdx !== -1) {
-    return trimmed.slice(uploadsIdx);
+    return wpUploadsPathToImagens(trimmed.slice(uploadsIdx));
   }
 
   const imagensSlash = trimmed.match(/\/imagens\/([^?#]+)/i);
@@ -46,7 +61,7 @@ function normalizeToLocalPath(url: string): string {
 
     const wpPath = hostPath.match(/^(\/wp-content\/uploads\/.+)/i);
     if (wpPath) {
-      return wpPath[1]!;
+      return wpUploadsPathToImagens(wpPath[1]!);
     }
   } catch {
     /* não é URL absoluta válida */

@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 
@@ -37,7 +38,16 @@ if (!fs.existsSync(source)) {
 fs.mkdirSync(path.dirname(dest), { recursive: true });
 fs.cpSync(source, dest, { recursive: true });
 
-console.log("Copiado:");
+console.log("Copiado para staging:");
 console.log(`  origem: ${source}`);
-console.log(`  destino: ${dest}`);
-console.log("URLs no site passam a funcionar como /wp-content/uploads/... (após normalização no cliente ou SQL).");
+console.log(`  destino temp: ${dest}`);
+console.log("Achatando para frontend/cliente/public/imagens/ ...");
+
+const flattenScript = path.join(root, "scripts", "flatten-uploads-to-imagens.mjs");
+const flat = spawnSync(process.execPath, [flattenScript], { cwd: root, stdio: "inherit" });
+
+if (flat.status !== 0 && flat.status !== null) {
+  process.exit(flat.status);
+}
+
+console.log("Pronto: imagens servidas como /imagens/<arquivo> (legado /wp-content/uploads no HTML vira /imagens no cliente).");

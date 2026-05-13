@@ -26,9 +26,14 @@
     "r2:test": "node scripts/r2-smoke-test.mjs",
     "migrate:wp": "node scripts/migrate-wordpress.mjs",
     "sync:wp-media": "node scripts/sync-wp-uploads-to-public.mjs",
+    "media:flatten": "node scripts/flatten-uploads-to-imagens.mjs",
     "fix:db-local-media": "node scripts/rewrite-db-media-to-local-paths.mjs",
     "scrape:live-images": "node scripts/scrape-live-site-featured-images.mjs",
-    "fix:image-urls": "node scripts/fix-public-image-urls.mjs"
+    "fix:image-urls": "node scripts/fix-public-image-urls.mjs",
+    "db:prune-commerce": "node scripts/prune-wp-commerce.mjs",
+    "db:prune-commerce:dry-run": "node scripts/prune-wp-commerce.mjs --dry-run",
+    "gallery:scrape": "node scripts/scrape-fusion-galleries.mjs",
+    "gallery:download-local": "node scripts/download-gallery-images-to-public.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.0.0",
