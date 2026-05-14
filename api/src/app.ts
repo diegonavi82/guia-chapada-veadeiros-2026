@@ -1,3 +1,4 @@
+import type { FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import jwt from "@fastify/jwt";
@@ -10,7 +11,7 @@ import { corsOrigins, env } from "./config/env.js";
 import { adminRoutes } from "./routes/admin.routes.js";
 import { publicRoutes } from "./routes/public.routes.js";
 
-export async function buildApp() {
+export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
     logger: {
       level: env.NODE_ENV === "development" ? "debug" : "info",
@@ -87,14 +88,8 @@ export async function buildApp() {
     return { status: "online" };
   });
 
-  // ROUTES
-  //await app.register(publicRoutes, {
-  //  prefix: "/api",
-  //});
+  await app.register(publicRoutes, { prefix: "/api" });
+  await app.register(adminRoutes, { prefix: "/api/admin" });
 
-  //await app.register(adminRoutes, {
-    //prefix: "/api/admin",
-  //});
-
-  //return app;
+  return app;
 }
