@@ -10,6 +10,7 @@
     "shared"
   ],
   "scripts": {
+    "postinstall": "node scripts/chmod-node-modules.mjs",
     "dev": "concurrently -n api,site,admin -c cyan,magenta,yellow \"npm run dev -w @guia/api\" \"npm run dev -w @guia/frontend-cliente\" \"npm run dev -w @guia/frontend-admin\"",
     "dev:workspaces": "npm run dev --workspaces --if-present",
     "dev:cliente": "npm run dev -w @guia/frontend-cliente",

@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 5173",
-    "build": "tsc -b && vite build",
+    "build": "node ../../scripts/exec-pkg.mjs typescript/lib/tsc.js -b && node ../../scripts/exec-pkg.mjs vite/bin/vite.js build",
     "preview": "vite preview --port 4173",
-    "typecheck": "tsc -b --noEmit"
+    "typecheck": "node ../../scripts/exec-pkg.mjs typescript/lib/tsc.js -b --noEmit"
   },
   "dependencies": {
     "@guia/shared": "*",

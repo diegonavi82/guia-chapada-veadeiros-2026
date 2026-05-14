@@ -12,8 +12,8 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "build": "node ../scripts/exec-pkg.mjs typescript/lib/tsc.js -p tsconfig.json",
+    "typecheck": "node ../scripts/exec-pkg.mjs typescript/lib/tsc.js -p tsconfig.json --noEmit"
   },
   "devDependencies": {
     "typescript": "^5.0.0"
