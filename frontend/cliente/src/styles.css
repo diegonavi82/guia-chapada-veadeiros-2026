@@ -15,14 +15,20 @@ body {
 }
 
 /*
- * Slides do hero: uma só sombra deslocada 2px (sem blur, sem contorno / stroke).
+ * Texto sobre o hero (título e parágrafos): sombra deslocada 2px,
+ * sem blur — opacidade 100 %. Não se aplica a badges/botões.
  */
 .gcv-hero-overlay-text h1,
-.gcv-hero-overlay-text p,
-.gcv-hero-overlay-text .gcv-hero-badge,
-.gcv-hero-overlay-text a.gcv-hero-line,
-.gcv-hero-overlay-text button.gcv-hero-line {
-  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.72);
+.gcv-hero-overlay-text p {
+  text-shadow: 2px 2px 0 rgb(0, 0, 0);
+}
+
+/* Chips laranja do hero sem sombra (WhatsApp, lista de espera) */
+.gcv-hero-overlay-text .gcv-hero-badge.gcv-hero-plain-chip,
+.gcv-hero-overlay-text a.gcv-hero-line.gcv-hero-plain-chip,
+.gcv-hero-overlay-text button.gcv-hero-line.gcv-hero-plain-chip {
+  text-shadow: none;
+  box-shadow: none;
 }
 
 .gcv-card-photo-text {

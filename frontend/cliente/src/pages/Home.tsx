@@ -541,7 +541,7 @@ export function Home() {
             <img
               src={heroSlide.image}
               alt=""
-              className="absolute inset-0 h-full w-full object-cover"
+              className="absolute inset-0 h-full w-full object-cover brightness-[0.8]"
               loading="eager"
               decoding="async"
               aria-hidden
@@ -569,7 +569,11 @@ export function Home() {
               </button>
               <div key={heroImageIndex}>
                 <span
-                  className="gcv-hero-line gcv-hero-badge mt-1 inline-flex max-w-[calc(100%-0.25rem)] rounded-full bg-[#e58b55] px-3 py-1.5 text-[10px] font-black uppercase leading-tight tracking-wide text-white shadow-lg max-sm:break-words sm:mt-0 sm:px-4 sm:py-2 sm:text-xs sm:text-[11px]"
+                  className={`gcv-hero-line gcv-hero-badge mt-1 inline-flex max-w-[calc(100%-0.25rem)] rounded-full bg-[#e58b55] px-3 py-1.5 text-[10px] font-black uppercase leading-tight tracking-wide text-white max-sm:break-words sm:mt-0 sm:px-4 sm:py-2 sm:text-xs sm:text-[11px] ${
+                    heroSlide.cta.kind === "waitlist" || heroSlide.cta.kind === "whatsapp"
+                      ? "gcv-hero-plain-chip"
+                      : "shadow-lg"
+                  }`}
                   style={{ animationDelay: `${heroAnim.badgeMs}ms` }}
                 >
                   {heroSlide.badge}
@@ -599,7 +603,7 @@ export function Home() {
                 ) : null}
                 {heroSlide.cta.kind === "whatsapp" ? (
                   <a
-                    className="gcv-hero-line mt-5 inline-flex items-center gap-2 rounded-full bg-[#e58b55] px-4 py-3 text-[10px] font-extrabold uppercase tracking-[0.08em] text-white shadow-xl shadow-orange-950/40 transition hover:bg-[#d97941] max-sm:max-w-full max-sm:break-words max-sm:text-center max-sm:[text-wrap:balance] sm:mt-7 sm:w-auto sm:px-6 sm:py-3.5 sm:text-xs sm:tracking-[0.12em] md:text-sm"
+                    className="gcv-hero-line gcv-hero-plain-chip mt-5 inline-flex items-center gap-2 rounded-full bg-[#e58b55] px-4 py-3 text-[10px] font-extrabold uppercase tracking-[0.08em] text-white transition hover:bg-[#d97941] max-sm:max-w-full max-sm:break-words max-sm:text-center max-sm:[text-wrap:balance] sm:mt-7 sm:w-auto sm:px-6 sm:py-3.5 sm:text-xs sm:tracking-[0.12em] md:text-sm"
                     href={whatsappUrl}
                     rel="noreferrer"
                     target="_blank"
@@ -611,7 +615,7 @@ export function Home() {
                 ) : heroSlide.cta.kind === "waitlist" ? (
                   <button
                     type="button"
-                    className="gcv-hero-line mt-5 inline-flex items-center justify-center rounded-full bg-[#e58b55] px-4 py-3 text-[10px] font-extrabold uppercase tracking-[0.08em] text-white shadow-xl shadow-orange-950/40 transition hover:bg-[#d97941] max-sm:max-w-full max-sm:break-words max-sm:text-center max-sm:[text-wrap:balance] sm:mt-7 sm:w-auto sm:px-6 sm:py-3.5 sm:text-xs sm:tracking-[0.12em] md:text-sm"
+                    className="gcv-hero-line gcv-hero-plain-chip mt-5 inline-flex items-center justify-center rounded-full bg-[#e58b55] px-4 py-3 text-[10px] font-extrabold uppercase tracking-[0.08em] text-white transition hover:bg-[#d97941] max-sm:max-w-full max-sm:break-words max-sm:text-center max-sm:[text-wrap:balance] sm:mt-7 sm:w-auto sm:px-6 sm:py-3.5 sm:text-xs sm:tracking-[0.12em] md:text-sm"
                     style={{ animationDelay: `${heroAnim.ctaStartMs}ms` }}
                     onClick={() => setWaitlistOpen(true)}
                   >

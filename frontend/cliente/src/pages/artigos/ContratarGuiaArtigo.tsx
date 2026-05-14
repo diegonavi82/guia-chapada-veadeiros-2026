@@ -17,11 +17,11 @@ const REVISTA_ARTICLE_PATH = "/revista/contratar-guia-local-chapada-veadeiros";
 /** Fotos reais do passeio — coloque os PNG/JPG nesta pasta (nomes estáveis para SEO e cache). */
 const ARTICLE_IMAGES = "/uploads/revista/contratar-guia-artigo" as const;
 
-/** Foto principal do artigo + mesma obra na sequência editorial (sem duplicar no corpo). */
-const IMG_GRUPO_CACHOEIRA_MONUMENTAL = `${ARTICLE_IMAGES}/grupo-cachoeira-monumental-guia-chapada-veadeiros.png`;
+/** Selfie grupal no mirante (capa Revista/home e hero desta página). */
+const IMG_HERO_CAPA_GUIA = `${ARTICLE_IMAGES}/hero-mirante-grupo-guia-local-chapada-veadeiros.png`;
 
 const IMGS = {
-  hero: IMG_GRUPO_CACHOEIRA_MONUMENTAL,
+  hero: IMG_HERO_CAPA_GUIA,
   /** Vista de cima — turista em poça triangular nas Cataratas dos Couros (`public/imagens/`). */
   fotoTuristaTrianguloCouros: "/imagens/turista-relaxando-triangulo-guia-chapada-veadeiros.jpeg",
   foto4: `${ARTICLE_IMAGES}/cataratas-couros-selfie-guia-turistas-chapada-veadeiros.png`,
@@ -53,7 +53,7 @@ const CAPTION_TURISTA_TRIANGULO_COUROS =
   "Turista relaxando em local secreto nas Cataratas dos Couros";
 
 const ALT_FOTO2 =
-  "Grupo de turistas posando na base de cachoeira monumental na Chapada dos Veadeiros, Goiás, em passeio com guia credenciado Cadastur";
+  "Grupo em selfie em mirante de madeira sobre vale verde com cachoeiras na Chapada dos Veadeiros — passeio guiado com guia Cadastur";
 const ALT_FOTO4 =
   "Selfie de grupo com guia local às Cataratas dos Couros na Chapada dos Veadeiros, Alto Paraíso de Goiás";
 const ALT_FOTO5 =
@@ -166,8 +166,8 @@ export function ContratarGuiaArtigo() {
       <Helmet>
         <meta property="og:locale" content="pt_BR" />
         <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:image:width" content="900" />
-        <meta property="og:image:height" content="1200" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="900" />
         <meta property="og:image:alt" content={ALT_FOTO2} />
         <meta property="article:author" content="Diego Navi" />
         <meta property="article:published_time" content="2026-05-13T00:00:00-03:00" />
@@ -194,8 +194,8 @@ export function ContratarGuiaArtigo() {
             <img
               src={IMGS.hero}
               alt={ALT_FOTO2}
-              width={900}
-              height={1200}
+              width={1200}
+              height={900}
               fetchPriority="high"
               decoding="async"
             />

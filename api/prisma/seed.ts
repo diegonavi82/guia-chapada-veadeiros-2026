@@ -37,9 +37,9 @@ const contratarGuiaContent = readFileSync(contratarGuiaHtmlPath, "utf8");
 const contratarGuiaSlug = "contratar-guia-local-chapada-veadeiros";
 /** Mesmas fotos que `ContratarGuiaArtigo` em `public/uploads/revista/contratar-guia-artigo/`. */
 const contratarFeaturedRevistaJpg =
-  "/uploads/revista/contratar-guia-artigo/grupo-cachoeira-monumental-guia-chapada-veadeiros.png";
+  "/uploads/revista/contratar-guia-artigo/hero-mirante-grupo-guia-local-chapada-veadeiros.png";
 const contratarFeaturedAlt =
-  "Grupo de turistas posando na base de cachoeira monumental na Chapada dos Veadeiros, Goiás, em passeio com guia credenciado Cadastur";
+  "Grupo em selfie em mirante de madeira sobre vale verde com cachoeiras na Chapada dos Veadeiros — passeio guiado com guia Cadastur";
 /** Conteúdo completo no frontend (`ArtigoMelhorEpoca`); o HTML aqui é resumo para a API. */
 const melhorEpocaSlug = "melhor-epoca-visitar-chapada-dos-veadeiros";
 

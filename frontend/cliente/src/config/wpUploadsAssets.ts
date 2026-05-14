@@ -43,7 +43,7 @@ export const revistaListOverridesBySlug: Record<string, { featuredImage?: string
     title: "Melhor época para visitar a Chapada dos Veadeiros? Guia mês a mês",
   },
   "contratar-guia-local-chapada-veadeiros": {
-    featuredImage: "/uploads/revista/contratar-guia-artigo/grupo-cachoeira-monumental-guia-chapada-veadeiros.png",
+    featuredImage: "/uploads/revista/contratar-guia-artigo/hero-mirante-grupo-guia-local-chapada-veadeiros.png",
     title: "Por que contratar um guia local na Chapada dos Veadeiros?",
   },
 };
