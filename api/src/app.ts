@@ -88,13 +88,13 @@ export async function buildApp() {
   });
 
   // ROUTES
-  await app.register(publicRoutes, {
-    prefix: "/api",
-  });
+  //await app.register(publicRoutes, {
+  //  prefix: "/api",
+  //});
 
-  await app.register(adminRoutes, {
-    prefix: "/api/admin",
-  });
+  //await app.register(adminRoutes, {
+    //prefix: "/api/admin",
+  //});
 
-  return app;
+  //return app;
 }
