@@ -16,7 +16,7 @@
     "dev:cliente": "npm run dev -w @guia/frontend-cliente",
     "dev:admin": "npm run dev -w @guia/frontend-admin",
     "dev:api": "npm run dev -w @guia/api",
-    "build": "npm run build --workspaces --if-present",
+    "build": "npm run build -w @guia/api",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "db:generate": "npm run db:generate -w @guia/api",
