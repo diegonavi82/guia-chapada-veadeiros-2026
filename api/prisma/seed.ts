@@ -55,19 +55,19 @@ const categoryDicas = await prisma.category.upsert({
 const contratarGuiaPost = await prisma.post.upsert({
   where: { slug: contratarGuiaSlug },
   update: {
-    title: "Por que é tão importante contratar um guia em passeios por trilhas e natureza",
+    title: "Por que é tão importante contratar um guia em passeios na natureza",
     excerpt:
       "Contratar um guia de turismo não é um luxo — é a diferença entre um passeio seguro e memorável e uma aventura que pode terminar mal. Entenda por que um condutor credenciado é indispensável na Chapada dos Veadeiros.",
     content: contratarGuiaContent,
     featuredImage: contratarFeaturedRevistaJpg,
     featuredImageAlt: contratarFeaturedAlt,
-    seoTitle: "Contratar guia Chapada Veadeiros: segurança em trilhas e natureza",
+    seoTitle: "Contratar guia Chapada Veadeiros: segurança na natureza",
     seoDescription:
       "Contratar guia Chapada Veadeiros garante segurança em trilhas e cachoeiras, fotos melhores e roteiro completo — incluindo piscinas naturais e formações rochosas só o guia local conduz bem. Saiba por que um credenciado faz diferença.",
     seoKeywords:
       "contratar guia chapada dos veadeiros, guia de turismo chapada veadeiros, condutor de visitantes chapada, por que contratar guia trilhas, passeios guiados alto paraíso, guia local chapada veadeiros, Diego Navi guia chapada, contratar guia natureza, piscina natural chapada dos veadeiros, Diego Navi Chapada dos Veadeiros, reflexo do céu poça natural cerrado, guia local fotos Chapada",
     seoFocusKeyword: "contratar guia chapada veadeiros",
-    ogTitle: "Contratar guia Chapada Veadeiros: segurança em trilhas e natureza",
+    ogTitle: "Contratar guia Chapada Veadeiros: segurança na natureza",
     ogDescription:
       "Segurança, fotos marcantes e roteiro completo na Chapada dos Veadeiros — piscinas naturais e formações só o guia local conduz bem. Saiba por que um credenciado faz diferença.",
     seoRobots: "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1",
@@ -77,20 +77,20 @@ const contratarGuiaPost = await prisma.post.upsert({
     categories: { set: [{ id: categoryDicas.id }] },
   },
   create: {
-    title: "Por que é tão importante contratar um guia em passeios por trilhas e natureza",
+    title: "Por que é tão importante contratar um guia em passeios na natureza",
     slug: contratarGuiaSlug,
     excerpt:
       "Contratar um guia de turismo não é um luxo — é a diferença entre um passeio seguro e memorável e uma aventura que pode terminar mal. Entenda por que um condutor credenciado é indispensável na Chapada dos Veadeiros.",
     content: contratarGuiaContent,
     featuredImage: contratarFeaturedRevistaJpg,
     featuredImageAlt: contratarFeaturedAlt,
-    seoTitle: "Contratar guia Chapada Veadeiros: segurança em trilhas e natureza",
+    seoTitle: "Contratar guia Chapada Veadeiros: segurança na natureza",
     seoDescription:
       "Contratar guia Chapada Veadeiros garante segurança em trilhas e cachoeiras, fotos melhores e roteiro completo — incluindo piscinas naturais e formações rochosas só o guia local conduz bem. Saiba por que um credenciado faz diferença.",
     seoKeywords:
       "contratar guia chapada dos veadeiros, guia de turismo chapada veadeiros, condutor de visitantes chapada, por que contratar guia trilhas, passeios guiados alto paraíso, guia local chapada veadeiros, Diego Navi guia chapada, contratar guia natureza, piscina natural chapada dos veadeiros, Diego Navi Chapada dos Veadeiros, reflexo do céu poça natural cerrado, guia local fotos Chapada",
     seoFocusKeyword: "contratar guia chapada veadeiros",
-    ogTitle: "Contratar guia Chapada Veadeiros: segurança em trilhas e natureza",
+    ogTitle: "Contratar guia Chapada Veadeiros: segurança na natureza",
     ogDescription:
       "Segurança, fotos marcantes e roteiro completo na Chapada dos Veadeiros — piscinas naturais e formações só o guia local conduz bem. Saiba por que um credenciado faz diferença.",
     seoRobots: "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1",

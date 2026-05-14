@@ -29,8 +29,6 @@ const IMGS = {
   trioA: `${ARTICLE_IMAGES}/selfie-rio-cachoeira-fundo-guia-chapada-veadeiros.png`,
   trioB: `${ARTICLE_IMAGES}/grupo-selfie-cachoeira-multinivel-chapada-veadeiros.png`,
   trioC: "/imagens/cachoeira-macaco-chapada-veadeiros-macacao-4.jpg",
-  /** Mesma obra que `foto4` — legenda distinta na secção “Novas amizades”. */
-  foto6: `${ARTICLE_IMAGES}/cataratas-couros-selfie-guia-turistas-chapada-veadeiros.png`,
   /** Família em poça natural — secção “O lado humano” (substitui o antigo duplicado no strip de 3 fotos). */
   foto7: `${ARTICLE_IMAGES}/familia-piscina-natural-rochas-guia-chapada-veadeiros.png`,
 } as const;
@@ -45,8 +43,6 @@ const CAPTION_TRIO_B =
   "Grupo numeroso na base da queda d’água: com guia todos chegam juntos aos ângulos mais marcantes com segurança.";
 const CAPTION_TRIO_C =
   "Passeios guiados com roteiros do lado B da Chapada que te levam a lugares fora do eixo comercial, sem aglomerações";
-const CAPTION_FOTO6 =
-  "Cataratas dos Couros — trechos de piscina natural e encontro do grupo só ficam tão seguros e memoráveis com condutor credenciado que conhece o local.";
 const CAPTION_FOTO7 =
   "Proximidade e confiança entre guia e grupo: o lado humano que diferencia um passeio com guia local na Chapada dos Veadeiros de um roteiro genérico.";
 const CAPTION_TURISTA_TRIANGULO_COUROS =
@@ -64,8 +60,6 @@ const ALT_TRIO_B =
   "Grupo de turistas em selfie na base de cachoeira em degraus na Chapada dos Veadeiros com guia Cadastur";
 const ALT_TRIO_C =
   "Topo da Cachoeira Catedral no complexo Macaco Macacão na Chapada dos Veadeiros — roteiros guiados fora do eixo comercial";
-const ALT_FOTO6 =
-  "Turistas com guia nas Cataratas dos Couros, Chapada dos Veadeiros — piscinas naturais e quedas d’água do cerrado";
 const ALT_FOTO7 =
   "Guia e família em poça natural entre rochas na Chapada dos Veadeiros — experiência humana do turismo com condutor local";
 const ALT_TURISTA_TRIANGULO_COUROS =
@@ -74,7 +68,7 @@ const ALT_TURISTA_TRIANGULO_COUROS =
 const WHATSAPP =
   "https://api.whatsapp.com/send?phone=5562982506891&text=Quero%20contratar%20um%20guia%20para%20a%20Chapada%20dos%20Veadeiros";
 
-const SEO_TITLE = "Por que contratar um guia de turismo em trilhas e natureza? | Chapada dos Veadeiros";
+const SEO_TITLE = "Por que contratar um guia de turismo na natureza? | Chapada dos Veadeiros";
 
 const SEO_DESCRIPTION =
   "Segurança, aproveitamento máximo, fotos incríveis e novas amizades: descubra por que contratar um guia de turismo credenciado na Chapada dos Veadeiros, com acesso seguro a piscinas naturais e cenários únicos só o condutor local conhece bem.";
@@ -101,7 +95,7 @@ const articleImagesAbsolute = [
 const jsonLdArticle = {
   "@context": "https://schema.org",
   "@type": "Article",
-  headline: "Por que é tão importante contratar um guia em passeios por trilhas e natureza?",
+  headline: "Por que é tão importante contratar um guia em passeios na natureza?",
   description:
     "Por que um guia credenciado na Chapada dos Veadeiros: segurança, fotos marcantes em piscinas naturais e roteiros que só o condutor local conhece bem.",
   image: articleImagesAbsolute,
@@ -203,7 +197,7 @@ export function ContratarGuiaArtigo() {
               <Link to="/revista" className="gcv-post-category">
                 Dicas de viagem
               </Link>
-              <h1>Por que é tão importante contratar um guia em passeios por trilhas e natureza?</h1>
+              <h1>Por que é tão importante contratar um guia em passeios na natureza?</h1>
             </div>
           </header>
 
@@ -441,18 +435,6 @@ export function ContratarGuiaArtigo() {
               confiança e transforma estranhos em companheiros de aventura.{" "}
               <strong>Muitas das amizades feitas nas trilhas duram para a vida toda.</strong>
             </p>
-
-            <figure className="gcv-post-figure">
-              <img
-                src={IMGS.foto6}
-                alt={ALT_FOTO6}
-                width={1200}
-                height={900}
-                loading="lazy"
-                decoding="async"
-              />
-              <figcaption>{CAPTION_FOTO6}</figcaption>
-            </figure>
 
             <h2>
               <span className="ico" aria-hidden>
