@@ -1,5 +1,6 @@
 import { LangLink } from "../../i18n/LangLink";
 import { revistaListOverridesBySlug } from "../../config/wpUploadsAssets";
+import { useSiteLocale } from "../../i18n/siteLocale";
 import type { RevistaTeaserPost } from "./types";
 import { formatPublicationDatePt } from "../../utils/formatPublicationDatePt";
 import { toPublicAssetUrl } from "../../utils/localMediaUrl";
@@ -13,10 +14,11 @@ export function RevistaTeaserCard({
   post: RevistaTeaserPost;
   variant: Variant;
 }) {
+  const locale = useSiteLocale();
   const ov = revistaListOverridesBySlug[post.slug];
   const cat = post.categories?.[0]?.name;
   const dek = post.excerpt || post.seoDescription || "";
-  const title = ov?.title ?? post.title;
+  const title = locale === "pt" && ov?.title ? ov.title : post.title;
   const fromApi = post.featuredImage ? (toPublicAssetUrl(post.featuredImage) ?? post.featuredImage) : null;
   const fromOverride = ov?.featuredImage ? (toPublicAssetUrl(ov.featuredImage) ?? ov.featuredImage) : null;
   const img = fromApi ?? fromOverride;

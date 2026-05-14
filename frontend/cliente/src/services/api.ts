@@ -1,12 +1,12 @@
 import type { SiteLocale } from "../i18n/types";
 import { SITE_LOCALES } from "../i18n/types";
-import i18n from "../i18n/config";
+import { getActiveSiteLocaleForApi } from "../i18n/activeSiteLocaleForApi";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3333/api";
 
 function currentSiteLocale(): SiteLocale {
-  const lng = i18n.language;
-  return SITE_LOCALES.includes(lng as SiteLocale) ? (lng as SiteLocale) : "pt";
+  const fromRoute = getActiveSiteLocaleForApi();
+  return SITE_LOCALES.includes(fromRoute) ? fromRoute : "pt";
 }
 
 function acceptLanguageHeader(): string {

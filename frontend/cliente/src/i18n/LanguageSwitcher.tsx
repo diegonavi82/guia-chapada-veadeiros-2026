@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import type { SiteLocale } from "./types";
 import { SITE_LOCALES } from "./types";
-import { stripLeadingLocale, withLocalePrefix } from "./paths";
+import { stripLeadingLocale } from "./paths";
 import { LangLinkForced } from "./LangLink";
 
 const labels: Record<SiteLocale, string> = { pt: "PT", en: "EN", es: "ES" };
@@ -23,7 +23,8 @@ export function LanguageSwitcher() {
           lng === "pt"
             ? !location.pathname.startsWith("/en") && !location.pathname.startsWith("/es")
             : location.pathname === `/${lng}` || location.pathname.startsWith(`/${lng}/`);
-        const target = `${withLocalePrefix(basePath, lng)}${search}`;
+        /** Caminho já sem `/en|/es` — só o `LangLinkForced` deve prefixar (evita `/en/en`). */
+        const target = `${basePath}${search}`;
         return (
           <LangLinkForced
             key={lng}
