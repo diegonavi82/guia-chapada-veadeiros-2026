@@ -23,8 +23,15 @@ type ContentItem = {
   description?: string;
   shortDescription?: string | null;
   price?: string | number | null;
+  featuredImage?: string | null;
+  featuredImageAlt?: string | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
+  seoKeywords?: string | null;
+  seoFocusKeyword?: string | null;
+  ogTitle?: string | null;
+  ogDescription?: string | null;
+  seoRobots?: string | null;
   status: PublishStatus;
   updatedAt?: string;
 };
@@ -46,7 +53,7 @@ type RedirectItem = {
 
 const menuItems: Array<{ key: SectionKey; title: string; description: string }> = [
   { key: "dashboard", title: "Dashboard", description: "Resumo geral do conteúdo" },
-  { key: "posts", title: "Artigos", description: "Matérias, categorias, tags e SEO" },
+  { key: "posts", title: "Artigos", description: "Revista Chapada · matérias, capa & SEO obrigatório ao publicar" },
   { key: "pages", title: "Páginas", description: "URLs preservadas e editor SEO" },
   { key: "products", title: "Passeios", description: "Produtos migrados do WooCommerce" },
   { key: "media", title: "Mídia", description: "Uploads e imagens no R2" },
@@ -94,12 +101,16 @@ function getReadableStatus(status: PublishStatus) {
   }[status];
 }
 
-function buildSeoAnalysis(item: ContentItem, section: SectionKey, focusKeyword: string) {
+function buildSeoAnalysis(item: ContentItem, section: SectionKey, fallbackFocusKeyword: string) {
   const rawContent = section === "products" ? (item.description ?? "") : (item.content ?? "");
   const excerpt = section === "products" ? (item.shortDescription ?? "") : (item.excerpt ?? "");
   const textContent = stripHtml(rawContent);
   const words = textContent ? textContent.split(/\s+/).length : 0;
-  const keyword = normalize(focusKeyword.trim());
+
+  const focusSource =
+    section === "posts" ? (item.seoFocusKeyword ?? "").trim() || fallbackFocusKeyword.trim() : fallbackFocusKeyword.trim();
+
+  const keyword = normalize(focusSource);
   const title = item.seoTitle || item.title;
   const description = item.seoDescription || excerpt || "";
   const normalizedTitle = normalize(title);
@@ -278,7 +289,7 @@ export function Dashboard() {
               setItems([]);
               setSelectedItem(data);
               setDraft(data);
-              setFocusKeyword(data.title.split(" ").slice(0, 4).join(" "));
+              setFocusKeyword(data.seoFocusKeyword?.trim() || data.title.split(" ").slice(0, 4).join(" "));
             }
             return;
           }
@@ -368,28 +379,73 @@ export function Dashboard() {
     setError("");
     setMessage("");
 
-    const body =
-      activeSection === "products"
-        ? {
-            title: draft.title,
-            slug: draft.slug,
-            shortDescription: draft.shortDescription ?? "",
-            description: draft.description ?? "",
-            price: draft.price ? String(draft.price) : null,
-            seoTitle: draft.seoTitle ?? "",
-            seoDescription: draft.seoDescription ?? "",
-            status: draft.status,
-          }
-        : {
-            title: draft.title,
-            slug: draft.slug,
-            excerpt: draft.excerpt ?? "",
-            content: draft.content ?? "",
-            seoTitle: draft.seoTitle ?? "",
-            seoDescription: draft.seoDescription ?? "",
-            status: draft.status,
-          };
+    let body:
+      | {
+          title: string;
+          slug: string;
+          shortDescription?: string | null;
+          description?: string;
+          price?: string | null;
+          seoTitle?: string | null;
+          seoDescription?: string | null;
+          status: PublishStatus;
+        }
+      | {
+          title: string;
+          slug: string;
+          excerpt: string | null | undefined;
+          content: string;
+          seoTitle?: string | null;
+          seoDescription?: string | null;
+          status: PublishStatus;
+          featuredImage?: string | null;
+          featuredImageAlt?: string | null;
+          seoKeywords?: string | null;
+          seoFocusKeyword?: string | null;
+          ogTitle?: string | null;
+          ogDescription?: string | null;
+          seoRobots?: string | null;
+        };
 
+    if (activeSection === "products") {
+      body = {
+        title: draft.title,
+        slug: draft.slug,
+        shortDescription: draft.shortDescription ?? "",
+        description: draft.description ?? "",
+        price: draft.price ? String(draft.price) : null,
+        seoTitle: draft.seoTitle ?? "",
+        seoDescription: draft.seoDescription ?? "",
+        status: draft.status,
+      };
+    } else if (activeSection === "posts") {
+      body = {
+        title: draft.title,
+        slug: draft.slug,
+        excerpt: draft.excerpt ?? "",
+        content: draft.content ?? "",
+        featuredImage: draft.featuredImage ?? null,
+        featuredImageAlt: draft.featuredImageAlt ?? null,
+        seoTitle: draft.seoTitle ?? "",
+        seoDescription: draft.seoDescription ?? "",
+        seoKeywords: draft.seoKeywords ?? "",
+        seoFocusKeyword: draft.seoFocusKeyword ?? "",
+        ogTitle: draft.ogTitle ?? "",
+        ogDescription: draft.ogDescription ?? "",
+        seoRobots: draft.seoRobots ?? "",
+        status: draft.status,
+      };
+    } else {
+      body = {
+        title: draft.title,
+        slug: draft.slug,
+        excerpt: draft.excerpt ?? "",
+        content: draft.content ?? "",
+        seoTitle: draft.seoTitle ?? "",
+        seoDescription: draft.seoDescription ?? "",
+        status: draft.status,
+      };
+    }
     try {
       const saved = await adminPut<ContentItem>(
         `${activeEditableConfig.endpoint}/${draft.id}`,
@@ -400,8 +456,21 @@ export function Dashboard() {
       setSelectedItem(saved);
       setDraft(saved);
       setMessage("Alterações salvas com sucesso.");
-    } catch {
-      setError("Não consegui salvar. Confira os campos obrigatórios e tente novamente.");
+    } catch (unknownErr: unknown) {
+      const err = unknownErr as Error & {
+        status?: number;
+        details?: { issues?: unknown; error?: string };
+      };
+      const rawIssues = err.details?.issues;
+      const issues =
+        Array.isArray(rawIssues) && rawIssues.every((entry) => typeof entry === "string")
+          ? (rawIssues as string[])
+          : null;
+      setError(
+        issues && issues.length > 0
+          ? issues.join(" · ")
+          : "Não consegui salvar. Confira os campos obrigatórios e tente novamente.",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -718,6 +787,44 @@ export function Dashboard() {
                         />
                       </div>
 
+                      {activeSection === "posts" ? (
+                        <div className="rounded-sm border border-[#c3c4c7] bg-white shadow-sm">
+                          <div className="border-b border-[#dcdcde] px-3 py-2">
+                            <strong>Imagem destacada · Revista</strong>
+                          </div>
+                          <div className="space-y-3 p-3 text-sm">
+                            <label className="block font-medium">
+                              URL da foto de capa
+                              <textarea
+                                className="mt-1 min-h-[4.5rem] w-full border border-[#8c8f94] px-3 py-2 font-mono text-xs outline-none"
+                                placeholder="/imagens/arquivo.jpg ou URL completa pública…"
+                                value={draft.featuredImage ?? ""}
+                                onChange={(event) =>
+                                  setDraft({
+                                    ...draft,
+                                    featuredImage: event.target.value || null,
+                                  })
+                                }
+                              />
+                            </label>
+                            <label className="block font-medium">
+                              Texto ALT da capa <span className="text-[#646970]">(obrigatório ao publicar)</span>
+                              <textarea
+                                className="mt-1 min-h-[4rem] w-full border border-[#8c8f94] px-3 py-2 text-sm outline-none"
+                                placeholder="Descrição acessível e rica para o Google Imagens."
+                                value={draft.featuredImageAlt ?? ""}
+                                onChange={(event) =>
+                                  setDraft({
+                                    ...draft,
+                                    featuredImageAlt: event.target.value || null,
+                                  })
+                                }
+                              />
+                            </label>
+                          </div>
+                        </div>
+                      ) : null}
+
                       {seoAnalysis ? (
                         <div className="rounded-sm border border-[#c3c4c7] bg-white shadow-sm">
                           <div className="flex items-center justify-between border-b border-[#dcdcde] px-3 py-2">
@@ -740,8 +847,15 @@ export function Dashboard() {
                                 Frase-chave foco
                                 <input
                                   className="mt-1 w-full border border-[#8c8f94] px-3 py-2 text-sm outline-none focus:border-[#2271b1] focus:ring-1 focus:ring-[#2271b1]"
-                                  value={focusKeyword}
-                                  onChange={(event) => setFocusKeyword(event.target.value)}
+                                  value={activeSection === "posts" ? (draft.seoFocusKeyword ?? "") : focusKeyword}
+                                  onChange={(event) =>
+                                    activeSection === "posts"
+                                      ? setDraft({
+                                          ...draft,
+                                          seoFocusKeyword: event.target.value,
+                                        })
+                                      : setFocusKeyword(event.target.value)
+                                  }
                                 />
                               </label>
                               <label className="block text-sm font-medium">
@@ -760,9 +874,78 @@ export function Dashboard() {
                                   onChange={(event) => setDraft({ ...draft, seoDescription: event.target.value })}
                                 />
                               </label>
+                              {activeSection === "posts" ? (
+                                <div className="space-y-3 border-t border-[#eef0f1] pt-3">
+                                  <label className="block text-sm font-medium">
+                                    Palavras-chave auxiliares <span className="text-[#646970]">(meta keywords)</span>
+                                    <textarea
+                                      className="mt-1 min-h-[4.5rem] w-full border border-[#8c8f94] px-3 py-2 text-xs outline-none"
+                                      placeholder="chapada dos veadeiros, cachoeira, alto paraíso..."
+                                      value={draft.seoKeywords ?? ""}
+                                      onChange={(event) =>
+                                        setDraft({
+                                          ...draft,
+                                          seoKeywords: event.target.value || null,
+                                        })
+                                      }
+                                    />
+                                  </label>
+                                  <label className="block text-sm font-medium">
+                                    Open Graph · título
+                                    <input
+                                      className="mt-1 w-full border border-[#8c8f94] px-3 py-2 text-sm outline-none"
+                                      placeholder="Se vazio, usa o Título SEO"
+                                      value={draft.ogTitle ?? ""}
+                                      onChange={(event) =>
+                                        setDraft({
+                                          ...draft,
+                                          ogTitle: event.target.value || null,
+                                        })
+                                      }
+                                    />
+                                  </label>
+                                  <label className="block text-sm font-medium">
+                                    Open Graph · descrição
+                                    <textarea
+                                      className="mt-1 min-h-16 w-full border border-[#8c8f94] px-3 py-2 text-sm outline-none"
+                                      placeholder="Se vazio, usa a meta description"
+                                      value={draft.ogDescription ?? ""}
+                                      onChange={(event) =>
+                                        setDraft({
+                                          ...draft,
+                                          ogDescription: event.target.value || null,
+                                        })
+                                      }
+                                    />
+                                  </label>
+                                  <label className="block text-sm font-medium">
+                                    Indexação · robots
+                                    <select
+                                      className="mt-1 w-full border border-[#8c8f94] px-2 py-1.5"
+                                      value={(draft.seoRobots ?? "index,follow").includes("noindex") ? "ni" : "ix"}
+                                      onChange={(event) =>
+                                        setDraft({
+                                          ...draft,
+                                          seoRobots:
+                                            event.target.value === "ni" ? "noindex,nofollow" : "index,follow",
+                                        })
+                                      }
+                                    >
+                                      <option value="ix">index,follow (padrão Google)</option>
+                                      <option value="ni">noindex,nofollow (ocultar buscadores)</option>
+                                    </select>
+                                  </label>
+                                </div>
+                              ) : null}
                               <div className="rounded border border-[#dcdcde] bg-[#f6f7f7] p-3">
                                 <p className="text-[#1a0dab]">{seoAnalysis.title || draft.title}</p>
-                                <p className="text-xs text-[#006621]">/{draft.slug}</p>
+                                <p className="text-xs text-[#006621]">
+                                  {activeSection === "posts"
+                                    ? `/revista/${draft.slug}`
+                                    : activeSection === "products"
+                                      ? `/passeios/${draft.slug}`
+                                      : `/${draft.slug}`}
+                                </p>
                                 <p className="mt-1 text-sm text-[#545454]">{seoAnalysis.description || "Sem descrição SEO."}</p>
                               </div>
                             </div>

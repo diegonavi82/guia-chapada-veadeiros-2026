@@ -7,6 +7,8 @@ export const wpUploadsAssets = {
   parqueNacionalSalto: "/imagens/parque-nacional-guia-chapada-veadeiros-saltos-rio-preto-garimpao.jpg",
   almecegas: "/imagens/cachoeira-almecegas-guia-chapada-veadeiros-alto-paraiso-10.jpg",
   valeLua: "/imagens/vale-lua-guia-chapada-veadeiros-sao-jorge-1.jpg",
+  /** Hero home — 1.º slide (guias locais / WhatsApp). */
+  heroSlideGuiasLocais: "/imagens/hero-slide-01-guias-locais-cachoeira.png",
   /** Hero home — 2.º slide (“Em breve” / lista de espera). */
   heroSlideEmBreve: "/imagens/hero-slide-02-em-breve-cachoeira.png",
   couros: "/imagens/cataratas-couros-guia-chapada-veadeiros-alto-paraiso-11.jpg",

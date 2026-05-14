@@ -10,7 +10,8 @@
     "shared"
   ],
   "scripts": {
-    "dev": "npm run dev --workspaces --if-present",
+    "dev": "concurrently -n api,site,admin -c cyan,magenta,yellow \"npm run dev -w @guia/api\" \"npm run dev -w @guia/frontend-cliente\" \"npm run dev -w @guia/frontend-admin\"",
+    "dev:workspaces": "npm run dev --workspaces --if-present",
     "dev:cliente": "npm run dev -w @guia/frontend-cliente",
     "dev:admin": "npm run dev -w @guia/frontend-admin",
     "dev:api": "npm run dev -w @guia/api",
@@ -40,6 +41,9 @@
     "dotenv": "^16.0.0",
     "mysql2": "^3.0.0",
     "sharp": "^0.33.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
   },
   "engines": {
     "node": ">=20"

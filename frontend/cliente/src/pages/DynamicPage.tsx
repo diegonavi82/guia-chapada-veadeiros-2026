@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { resolvePageSlugAlias } from "@guia/shared";
 import {
   AttractionPhotoGallery,
   type AttractionGalleryItem,
@@ -357,6 +358,8 @@ function SidebarInfoLine({ line }: { line: string }) {
 
 export function DynamicPage() {
   const { slug = "" } = useParams();
+  const navigate = useNavigate();
+  const canonicalSlug = resolvePageSlugAlias(slug);
   const [page, setPage] = useState<PageData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -366,13 +369,36 @@ export function DynamicPage() {
       return;
     }
 
+    if (canonicalSlug !== slug) {
+      navigate(`/${canonicalSlug}`, { replace: true });
+      return;
+    }
+
+    let cancelled = false;
     setIsLoading(true);
     setError("");
-    apiGet<PageData>(`/pages/${slug}`)
-      .then(setPage)
-      .catch(() => setError("Pagina nao encontrada ou API indisponivel."))
-      .finally(() => setIsLoading(false));
-  }, [slug]);
+    setPage(null);
+    apiGet<PageData>(`/pages/${canonicalSlug}`)
+      .then((data) => {
+        if (!cancelled) setPage(data);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setError(
+            import.meta.env.DEV
+              ? `Não foi possível carregar (/pages/${canonicalSlug}). Confirme se a API está a correr (ex.: npm run dev:api) e VITE_API_BASE_URL=${JSON.stringify(import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3333/api")}.`
+              : "Página não encontrada ou temporariamente indisponível.",
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, canonicalSlug, navigate]);
 
   if (isLoading) {
     return <main className="mx-auto max-w-4xl px-4 py-16 text-slate-600">Carregando pagina...</main>;
@@ -381,8 +407,8 @@ export function DynamicPage() {
   if (error || !page) {
     return (
       <main className="mx-auto max-w-4xl px-4 py-16">
-        <Seo title="Pagina nao encontrada" description="Esta pagina nao foi encontrada." robots="noindex,follow" />
-        <h1 className="text-4xl font-black text-cerrado-900">Pagina nao encontrada</h1>
+        <Seo title="Página não encontrada" description="Esta página não foi encontrada." robots="noindex,follow" />
+        <h1 className="text-4xl font-black text-cerrado-900">Página não encontrada</h1>
         <p className="mt-4 text-slate-600">{error}</p>
       </main>
     );

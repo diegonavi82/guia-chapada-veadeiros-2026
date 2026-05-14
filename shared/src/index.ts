@@ -1,3 +1,5 @@
+export { PAGE_SLUG_ALIASES, resolvePageSlugAlias } from "./pageSlugAliases";
+
 export {
   WATERFALL_MAP_HOTSPOTS,
   WATERFALL_MAP_PAGE_SLUGS,
@@ -12,6 +14,8 @@ export type SeoMetadata = {
   canonical?: string;
   ogImage?: string;
   robots?: string;
+  /** Lista separada por vírgulas (uso moderado nos buscadores) */
+  keywords?: string;
 };
 
 export type BreadcrumbItem = {
@@ -26,8 +30,14 @@ export type PublicPost = {
   excerpt?: string | null;
   content: string;
   featuredImage?: string | null;
+  featuredImageAlt?: string | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
+  seoKeywords?: string | null;
+  seoFocusKeyword?: string | null;
+  ogTitle?: string | null;
+  ogDescription?: string | null;
+  seoRobots?: string | null;
   publishedAt?: string | null;
 };
 

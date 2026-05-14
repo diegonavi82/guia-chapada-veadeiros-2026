@@ -4,6 +4,7 @@ import { login } from "../controllers/auth.controller.js";
 import { uploadMedia } from "../controllers/media.controller.js";
 import { requireAuth } from "../middleware/auth.js";
 import { prisma } from "../utils/prisma.js";
+import { collectPostPublishIssues } from "../utils/postPublishValidation.js";
 
 const idParamsSchema = z.object({
   id: z.coerce.number().int().positive(),
@@ -20,12 +21,27 @@ const postUpdateSchema = z.object({
   slug: z.string().min(1),
   excerpt: z.string().nullable().optional(),
   content: z.string().min(1),
+  featuredImage: z.string().nullable().optional(),
+  featuredImageAlt: z.string().nullable().optional(),
+  seoTitle: z.string().nullable().optional(),
+  seoDescription: z.string().nullable().optional(),
+  seoKeywords: z.string().nullable().optional(),
+  seoFocusKeyword: z.string().nullable().optional(),
+  ogTitle: z.string().nullable().optional(),
+  ogDescription: z.string().nullable().optional(),
+  seoRobots: z.string().nullable().optional(),
+  status: publishStatusSchema,
+});
+
+const pageUpdateSchema = z.object({
+  title: z.string().min(1),
+  slug: z.string().min(1),
+  excerpt: z.string().nullable().optional(),
+  content: z.string().min(1),
   seoTitle: z.string().nullable().optional(),
   seoDescription: z.string().nullable().optional(),
   status: publishStatusSchema,
 });
-
-const pageUpdateSchema = postUpdateSchema;
 
 const productUpdateSchema = z.object({
   title: z.string().min(1),
@@ -44,13 +60,19 @@ async function syncSeoMetadata({
   entityType,
   seoDescription,
   seoTitle,
+  ogImage,
+  robots,
 }: {
   canonicalUrl: string;
   entityId: number;
   entityType: "POST" | "PAGE" | "PRODUCT";
   seoDescription?: string | null;
   seoTitle?: string | null;
+  ogImage?: string | null;
+  robots?: string | null;
 }) {
+  const robotsValue = (robots?.trim() || "index,follow").slice(0, 96);
+
   await prisma.seoMetadata.upsert({
     where: {
       entityType_entityId: {
@@ -62,14 +84,17 @@ async function syncSeoMetadata({
       canonicalUrl,
       entityId,
       entityType,
-      robots: "index,follow",
+      robots: robotsValue,
       seoDescription,
       seoTitle,
+      ogImage: ogImage ?? undefined,
     },
     update: {
       canonicalUrl,
       seoDescription,
       seoTitle,
+      ogImage: ogImage ?? undefined,
+      robots: robotsValue,
     },
   });
 }
@@ -125,22 +150,38 @@ export async function adminRoutes(app: FastifyInstance) {
       });
     });
 
-    privateRoutes.put("/posts/:id", async (request) => {
+    privateRoutes.put("/posts/:id", async (request, reply) => {
       const params = idParamsSchema.parse(request.params);
       const payload = postUpdateSchema.parse(request.body);
 
+      const existing = await prisma.post.findUniqueOrThrow({
+        where: { id: params.id },
+      });
+
+      if (payload.status === "PUBLISHED") {
+        const issues = collectPostPublishIssues(payload);
+        if (issues.length > 0) {
+          return reply.code(400).send({ error: "validacao_revista", issues });
+        }
+      }
+
+      const publishedAt =
+        payload.status === "PUBLISHED" ? (existing.publishedAt ?? new Date()) : existing.publishedAt;
+
       const post = await prisma.post.update({
         where: { id: params.id },
-        data: payload,
+        data: { ...payload, publishedAt },
         include: { categories: true, tags: true },
       });
 
       await syncSeoMetadata({
-        canonicalUrl: `/blog/${post.slug}`,
+        canonicalUrl: `/revista/${post.slug}`,
         entityId: post.id,
         entityType: "POST",
         seoDescription: post.seoDescription,
         seoTitle: post.seoTitle,
+        ogImage: post.featuredImage,
+        robots: post.seoRobots,
       });
 
       return post;

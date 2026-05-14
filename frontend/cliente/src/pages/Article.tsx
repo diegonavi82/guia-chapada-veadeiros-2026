@@ -11,9 +11,16 @@ type ArticleData = {
   excerpt?: string | null;
   content: string;
   featuredImage?: string | null;
+  featuredImageAlt?: string | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
+  seoKeywords?: string | null;
+  seoFocusKeyword?: string | null;
+  ogTitle?: string | null;
+  ogDescription?: string | null;
+  seoRobots?: string | null;
   publishedAt?: string | null;
+  updatedAt?: string | null;
 };
 
 export function Article() {
@@ -35,37 +42,73 @@ export function Article() {
     setIsLoading(true);
     apiGet<ArticleData>(`/posts/${slug}`)
       .then(setArticle)
-      .catch(() => setError("Artigo nao encontrado ou API indisponivel."))
+      .catch(() => setError("Artigo não encontrado ou sem permissão para leitura pública."))
       .finally(() => setIsLoading(false));
   }, [slug]);
 
-  const title = article?.seoTitle || article?.title || fallbackTitle || "Artigo";
-  const description =
-    article?.seoDescription || article?.excerpt || "Artigo migrado do WordPress com metadados SEO preservados.";
+  /** Título exibido na aba — prioriza o meta title configurado para buscadores */
+  const documentTitle =
+    article?.seoTitle ?? article?.title ?? fallbackTitle ?? "Revista Chapada dos Veadeiros";
+  /** Descrição da meta principal (snippets Google) */
+  const metaTagDescription =
+    article?.seoDescription ??
+    article?.excerpt ??
+    "Matéria completa sobre a Chapada dos Veadeiros, com texto estruturado para leitura e SEO.";
+
+  const robots = article?.seoRobots?.trim() || "index,follow";
+  const keywordsTrim = article?.seoKeywords?.trim();
+  const keywords = keywordsTrim && keywordsTrim.length > 0 ? keywordsTrim : undefined;
+
   const heroImage = toPublicAssetUrl(article?.featuredImage) ?? article?.featuredImage ?? undefined;
+  const heroAlt =
+    article?.featuredImageAlt?.trim() ||
+    (article?.title ? `${article.title} — foto de capa` : "Imagem de capa da matéria");
   const bodyHtml = article?.content ? rewriteHtmlMediaUrls(article.content) : "";
+
+  const structuredArticle = article
+    ? ({
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        headline: article.seoTitle ?? article.title,
+        description: metaTagDescription,
+        ...(article.updatedAt ? { dateModified: article.updatedAt } : {}),
+        datePublished: article.publishedAt,
+        mainEntityOfPage: `/revista/${slug}`,
+        ...(keywords ? { keywords } : {}),
+        ...(heroImage
+          ? {
+              image: [{ "@type": "ImageObject", url: heroImage, caption: heroAlt }],
+            }
+          : {}),
+        author: {
+          "@type": "Organization",
+          name: "Guia Chapada dos Veadeiros",
+        },
+        publisher: {
+          "@type": "Organization",
+          name: "Guia Chapada dos Veadeiros",
+        },
+      } as Record<string, unknown>)
+    : undefined;
 
   return (
     <article className="mx-auto max-w-4xl px-4 py-16">
       <Seo
-        title={title}
-        description={description}
-        canonical={`/blog/${slug}`}
+        title={documentTitle}
+        description={metaTagDescription}
+        canonical={`/revista/${slug}`}
         ogImage={heroImage}
+        ogTitle={article?.ogTitle ?? undefined}
+        ogDescription={article?.ogDescription ?? undefined}
+        keywords={keywords}
+        robots={robots}
         type="article"
         breadcrumbs={[
-          { name: "Inicio", url: "/" },
-          { name: "Blog", url: "/blog" },
-          { name: title, url: `/blog/${slug}` },
+          { name: "Início", url: "/" },
+          { name: "Revista", url: "/revista" },
+          { name: documentTitle, url: `/revista/${slug}` },
         ]}
-        jsonLd={{
-          "@context": "https://schema.org",
-          "@type": "Article",
-          headline: title,
-          mainEntityOfPage: `/blog/${slug}`,
-          datePublished: article?.publishedAt,
-          image: heroImage,
-        }}
+        jsonLd={structuredArticle}
       />
       {isLoading ? <p className="text-slate-600">Carregando artigo...</p> : null}
       {error ? <p className="rounded-2xl bg-red-50 p-4 text-red-700">{error}</p> : null}
@@ -74,13 +117,21 @@ export function Article() {
           {heroImage ? (
             <img
               src={heroImage}
-              alt={article.title}
+              alt={heroAlt}
               className="mb-10 aspect-[16/9] w-full rounded-3xl object-cover"
               loading="eager"
+              fetchPriority="high"
             />
           ) : null}
-          <h1 className="text-5xl font-black text-cerrado-900">{article.title}</h1>
-          {article.excerpt ? <p className="mt-6 text-xl text-slate-700">{article.excerpt}</p> : null}
+          <header>
+            <h1 className="text-5xl font-black text-cerrado-900">{article.title}</h1>
+            {article.excerpt ? <p className="mt-6 text-xl text-slate-700">{article.excerpt}</p> : null}
+            {article.seoFocusKeyword ? (
+              <p className="mt-3 text-xs font-bold uppercase tracking-widest text-cerrado-600">
+                foco editorial: <span className="text-slate-800">{article.seoFocusKeyword}</span>
+              </p>
+            ) : null}
+          </header>
           <div
             className="prose prose-lg mt-10 max-w-none"
             dangerouslySetInnerHTML={{ __html: bodyHtml }}

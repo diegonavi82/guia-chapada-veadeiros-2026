@@ -4,7 +4,7 @@ import { wpUploadsAssets } from "../config/wpUploadsAssets";
 const navItems = [
   ["Fale Conosco", "/contato"],
   ["Atrativos", "/atrativos"],
-  ["Blog", "/blog"],
+  ["Revista", "/revista"],
 ];
 
 export function SiteLayout() {

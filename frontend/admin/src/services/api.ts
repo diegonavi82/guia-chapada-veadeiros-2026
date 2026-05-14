@@ -41,7 +41,11 @@ export async function adminPut<T>(path: string, token: string, body: unknown): P
   });
 
   if (!response.ok) {
-    throw new Error(`Erro admin ${response.status}`);
+    const details = (await response.json().catch(() => null)) as Record<string, unknown> | null;
+    const err = new Error(`Erro admin ${response.status}`) as Error & { status: number; details: Record<string, unknown> | null };
+    err.status = response.status;
+    err.details = details;
+    throw err;
   }
 
   return response.json() as Promise<T>;

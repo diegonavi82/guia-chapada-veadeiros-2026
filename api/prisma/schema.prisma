@@ -46,8 +46,14 @@ model Post {
   excerpt        String?       @db.Text
   content        String        @db.LongText
   featuredImage  String?       @map("featured_image")
+  featuredImageAlt String?     @db.Text @map("featured_image_alt")
   seoTitle       String?       @map("seo_title")
   seoDescription String?       @db.Text @map("seo_description")
+  seoKeywords    String?       @db.Text @map("seo_keywords")
+  seoFocusKeyword String?      @db.VarChar(255) @map("seo_focus_keyword")
+  ogTitle        String?       @db.VarChar(512) @map("og_title")
+  ogDescription  String?       @db.Text @map("og_description")
+  seoRobots      String?       @db.VarChar(96) @map("seo_robots")
   status         PublishStatus @default(DRAFT)
   authorId       Int?          @map("author_id")
   publishedAt    DateTime?     @map("published_at")

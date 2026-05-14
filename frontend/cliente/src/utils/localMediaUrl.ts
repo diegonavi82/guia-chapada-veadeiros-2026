@@ -4,11 +4,10 @@
  *
  * Caminhos legados `/wp-content/uploads/ano/mês/arquivo` viram `/imagens/arquivo`.
  *
- * Opcional: `VITE_PUBLIC_MEDIA_BASE` prefixa `/imagens/...` quando os arquivos ainda
- * não estão em `public/` (fallback temporário ao site ao vivo).
+ * Os arquivos servidos pelo Vite ficam em `frontend/cliente/public/imagens/`. Evite
+ * prefixar estes URLs com o domínio do WordPress: o PHP costuma não expor a mesma
+ * árvore plana sob `/imagens/…`, pelo que esse padrão gera centenas de 404 no browser.
  */
-
-const mediaBase = (import.meta.env.VITE_PUBLIC_MEDIA_BASE ?? "").replace(/\/$/, "");
 
 /** Migração: uploads WP em árvore por ano → um único diretório público. */
 function wpUploadsPathToImagens(localPath: string): string {
@@ -21,18 +20,6 @@ function wpUploadsPathToImagens(localPath: string): string {
   const file = parts[parts.length - 1];
 
   return file ? `/imagens/${file}` : trimmed;
-}
-
-function shouldPrefixWithMediaBase(path: string): boolean {
-  return path.startsWith("/imagens/");
-}
-
-function applyMediaBase(path: string): string {
-  if (!mediaBase || !shouldPrefixWithMediaBase(path)) {
-    return path;
-  }
-
-  return `${mediaBase}${path}`;
 }
 
 function normalizeToLocalPath(url: string): string {
@@ -75,9 +62,7 @@ export function toPublicAssetUrl(url: string | null | undefined): string | undef
     return undefined;
   }
 
-  const local = normalizeToLocalPath(url.trim());
-
-  return applyMediaBase(local);
+  return normalizeToLocalPath(url.trim());
 }
 
 function rewriteSrcsetList(value: string): string {

@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { WATERFALL_MAP_IMAGE_URL, waterfallMapHotspots } from "../config/waterfallMap";
 import { wpUploadsAssets as Wp } from "../config/wpUploadsAssets";
 import { WaitlistModal } from "../components/WaitlistModal";
+import { LatestRevistaLayouts } from "../components/revista/LatestRevistaLayouts";
+import type { RevistaTeaserPost } from "../components/revista/types";
 import { Seo } from "../seo/Seo";
 import { apiGet } from "../services/api";
 
@@ -29,7 +31,7 @@ type HeroSlide = HeroSlideCopy & { image: string };
 /** Apenas dois slides principais: guias locais · em breve plataforma. */
 const HERO_SLIDES: HeroSlide[] = [
   {
-    image: Wp.valeLua,
+    image: Wp.heroSlideGuiasLocais,
     badge: "Chapada dos Veadeiros",
     title: "Passeios com guias locais",
     lead:
@@ -189,28 +191,6 @@ const featuredAttractions = [
   },
 ];
 
-const latestPosts = [
-  {
-    title: "Parque Nacional: trilhas clássicas e planejamento de dia inteiro",
-    excerpt: "Ingressos, sal e cânions emblemáticos com respeito às normas da unidade.",
-    href: "/gcv-artigo-demonstrativo-pjeszcvu",
-  },
-  {
-    title: "Alto Paraíso de Goiás como base ecoturística",
-    excerpt: "Hospedagem, restaurantes e acesso às atrações ao redor do núcleo urbano.",
-    href: "/gcv-artigo-demonstrativo-akzqugs7",
-  },
-  {
-    title: "São Jorge: ritmo de vila na sombra da Serra dos Cristais",
-    excerpt: "Logística entre trilhas, artesanato local e passeios combinados ao Vale da Lua.",
-    href: "/gcv-artigo-demonstrativo-dc9esyjo",
-  },
-  {
-    title: "Por que Contratar um Guia Local na Chapada dos Veadeiros?”'",
-    excerpt: "Veja mais no blog.",
-    href: "/contratar-guia-local-chapada-veadeiros",
-  },
-];
 
 const reviews = [
   {
@@ -334,6 +314,9 @@ export function Home() {
   const [instagramPhotos, setInstagramPhotos] = useState<InstagramMediaItem[]>([]);
   const [isInstagramLoading, setIsInstagramLoading] = useState(true);
   const [instagramError, setInstagramError] = useState<string | null>(null);
+  const [revistaLatest, setRevistaLatest] = useState<RevistaTeaserPost[]>([]);
+  const [revistaLoading, setRevistaLoading] = useState(true);
+  const [revistaError, setRevistaError] = useState<string | null>(null);
   const [heroImageIndex, setHeroImageIndex] = useState(() => pickRandomHeroSlideIndex());
   const heroPointerDragRef = useRef({ pointerId: -1, startX: 0, locked: false });
   const shuffledReviews = useMemo(() => shuffleReviews(), []);
@@ -343,6 +326,32 @@ export function Home() {
 
     return shuffledReviews[reviewIndex];
   });
+
+  useEffect(() => {
+    let isMounted = true;
+
+    apiGet<{ items: RevistaTeaserPost[] }>("/posts/latest?take=8")
+      .then((payload) => {
+        if (isMounted) {
+          setRevistaLatest(payload.items);
+          setRevistaError(null);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setRevistaError("Não foi possível carregar as últimas matérias da Revista.");
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setRevistaLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -512,10 +521,10 @@ export function Home() {
           ],
         }}
       />
-      <section className="official-home-shell px-4 pb-16 pt-9">
+      <section className="official-home-shell px-3 pb-14 pt-7 sm:px-4 sm:pb-16 sm:pt-9">
         <div className="mx-auto max-w-[1180px]">
           <div
-            className="relative aspect-video min-h-[300px] w-full cursor-grab touch-pan-y overflow-hidden rounded-[1.8rem] bg-[#0f2420] shadow-2xl active:cursor-grabbing sm:min-h-[340px]"
+            className="relative w-full cursor-grab touch-pan-y overflow-hidden rounded-[1.8rem] bg-[#0f2420] shadow-2xl active:cursor-grabbing max-sm:aspect-none max-sm:min-h-[460px] sm:aspect-video sm:min-h-[340px]"
             role="region"
             aria-roledescription="Carrossel"
             aria-label={`Destaque ${heroImageIndex + 1} de ${HERO_SLIDES.length}`}
@@ -536,12 +545,10 @@ export function Home() {
               className="absolute inset-0 bg-gradient-to-br from-[#0a1814]/92 via-[#0f2420]/78 to-[#163d33]/70"
               aria-hidden
             />
-            <div
-              className="gcv-hero-overlay-text absolute inset-0 z-[1] flex flex-col justify-center overflow-hidden px-5 py-14 text-white sm:px-8 sm:py-16 md:px-12 md:py-20 lg:py-24"
-            >
+            <div className="gcv-hero-overlay-text absolute inset-0 z-[1] flex flex-col justify-center overflow-hidden px-5 py-10 text-white max-sm:justify-start max-sm:px-[3rem] max-sm:pb-[3.25rem] max-sm:pt-10 sm:px-8 sm:py-14 md:px-12 md:py-20 lg:py-24">
               <button
                 type="button"
-                className="absolute left-4 top-1/2 z-[2] grid h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full border border-white/40 bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/18"
+                className="absolute left-2 top-1/2 z-[2] grid h-8 w-8 -translate-y-1/2 cursor-pointer place-items-center rounded-full border border-white/40 bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/18 sm:left-4 sm:h-9 sm:w-9"
                 onClick={goToPreviousHeroImage}
                 aria-label="Imagem anterior"
               >
@@ -549,7 +556,7 @@ export function Home() {
               </button>
               <button
                 type="button"
-                className="absolute right-4 top-1/2 z-[2] grid h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full border border-white/40 bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/18"
+                className="absolute right-2 top-1/2 z-[2] grid h-8 w-8 -translate-y-1/2 cursor-pointer place-items-center rounded-full border border-white/40 bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/18 sm:right-4 sm:h-9 sm:w-9"
                 onClick={goToNextHeroImage}
                 aria-label="Próxima imagem"
               >
@@ -557,19 +564,19 @@ export function Home() {
               </button>
               <div key={heroImageIndex}>
                 <span
-                  className="gcv-hero-line gcv-hero-badge inline-flex rounded-full bg-[#e58b55] px-4 py-2 text-xs font-black uppercase tracking-wide text-white shadow-lg sm:text-[11px]"
+                  className="gcv-hero-line gcv-hero-badge mt-1 inline-flex max-w-[calc(100%-0.25rem)] rounded-full bg-[#e58b55] px-3 py-1.5 text-[10px] font-black uppercase leading-tight tracking-wide text-white shadow-lg max-sm:break-words sm:mt-0 sm:px-4 sm:py-2 sm:text-xs sm:text-[11px]"
                   style={{ animationDelay: `${heroAnim.badgeMs}ms` }}
                 >
                   {heroSlide.badge}
                 </span>
-                <h1 className="mt-5 max-w-4xl text-balance text-3xl font-black leading-[1.08] tracking-tight sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
+                <h1 className="mt-3 max-w-full text-balance text-[clamp(1.45rem,4.85vw,1.85rem)] font-black leading-[1.14] tracking-tight sm:mt-5 sm:max-w-4xl sm:text-4xl sm:leading-[1.08] md:text-5xl lg:text-6xl xl:text-7xl">
                   <StaggeredWords
                     text={heroSlide.title}
                     startAtMs={heroAnim.titleStartMs}
                     stepMs={HERO_TITLE_STEP_MS}
                   />
                 </h1>
-                <p className="mt-5 max-w-3xl text-base font-medium leading-relaxed text-white/92 md:text-lg md:leading-relaxed">
+                <p className="mt-3 max-w-full text-sm font-medium leading-snug text-white/92 max-sm:text-balance sm:mt-5 sm:max-w-3xl sm:text-base sm:leading-relaxed md:text-lg md:leading-relaxed">
                   <StaggeredWords
                     text={heroSlide.lead}
                     startAtMs={heroAnim.leadStartMs}
@@ -577,7 +584,7 @@ export function Home() {
                   />
                 </p>
                 {heroSlide.sub.trim() ? (
-                  <p className="mt-4 max-w-2xl text-sm font-medium leading-relaxed text-white/88 md:text-base">
+                  <p className="mt-3 max-w-full text-[13px] font-medium leading-snug text-white/88 max-sm:text-balance sm:mt-4 sm:max-w-2xl sm:text-sm md:text-base md:leading-relaxed">
                     <StaggeredWords
                       text={heroSlide.sub}
                       startAtMs={heroAnim.subStartMs}
@@ -587,7 +594,7 @@ export function Home() {
                 ) : null}
                 {heroSlide.cta.kind === "whatsapp" ? (
                   <a
-                    className="gcv-hero-line mt-7 inline-flex items-center gap-2 rounded-full bg-[#e58b55] px-6 py-3.5 text-xs font-extrabold uppercase tracking-[0.12em] text-white shadow-xl shadow-orange-950/40 transition hover:bg-[#d97941] md:text-sm"
+                    className="gcv-hero-line mt-5 inline-flex items-center gap-2 rounded-full bg-[#e58b55] px-4 py-3 text-[10px] font-extrabold uppercase tracking-[0.08em] text-white shadow-xl shadow-orange-950/40 transition hover:bg-[#d97941] max-sm:max-w-full max-sm:break-words max-sm:text-center max-sm:[text-wrap:balance] sm:mt-7 sm:w-auto sm:px-6 sm:py-3.5 sm:text-xs sm:tracking-[0.12em] md:text-sm"
                     href={whatsappUrl}
                     rel="noreferrer"
                     target="_blank"
@@ -599,7 +606,7 @@ export function Home() {
                 ) : heroSlide.cta.kind === "waitlist" ? (
                   <button
                     type="button"
-                    className="gcv-hero-line mt-7 inline-flex items-center justify-center rounded-full bg-[#e58b55] px-6 py-3.5 text-xs font-extrabold uppercase tracking-[0.12em] text-white shadow-xl shadow-orange-950/40 transition hover:bg-[#d97941] md:text-sm"
+                    className="gcv-hero-line mt-5 inline-flex items-center justify-center rounded-full bg-[#e58b55] px-4 py-3 text-[10px] font-extrabold uppercase tracking-[0.08em] text-white shadow-xl shadow-orange-950/40 transition hover:bg-[#d97941] max-sm:max-w-full max-sm:break-words max-sm:text-center max-sm:[text-wrap:balance] sm:mt-7 sm:w-auto sm:px-6 sm:py-3.5 sm:text-xs sm:tracking-[0.12em] md:text-sm"
                     style={{ animationDelay: `${heroAnim.ctaStartMs}ms` }}
                     onClick={() => setWaitlistOpen(true)}
                   >
@@ -607,7 +614,7 @@ export function Home() {
                   </button>
                 ) : (
                   <Link
-                    className="gcv-hero-line mt-7 inline-flex items-center justify-center rounded-full bg-[#e58b55] px-6 py-3.5 text-xs font-extrabold uppercase tracking-[0.12em] text-white shadow-xl shadow-orange-950/40 transition hover:bg-[#d97941] md:text-sm"
+                    className="gcv-hero-line mt-5 inline-flex items-center justify-center rounded-full bg-[#e58b55] px-4 py-3 text-[10px] font-extrabold uppercase tracking-[0.08em] text-white shadow-xl shadow-orange-950/40 transition hover:bg-[#d97941] max-sm:max-w-full max-sm:break-words max-sm:text-center max-sm:[text-wrap:balance] sm:mt-7 sm:w-auto sm:px-6 sm:py-3.5 sm:text-xs sm:tracking-[0.12em] md:text-sm"
                     to={heroSlide.cta.to}
                     style={{ animationDelay: `${heroAnim.ctaStartMs}ms` }}
                   >
@@ -645,7 +652,7 @@ export function Home() {
                 <span className="inline-flex rounded-full bg-[#e58b55] px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-white sm:text-[11px]">
                   Atrações imperdíveis
                 </span>
-                <h2 className="mt-3 max-w-[20ch] text-balance text-2xl font-black leading-[1.12] text-slate-900 sm:max-w-none md:text-4xl lg:text-[2.65rem]">
+                <h2 className="mt-3 max-w-full text-balance text-[clamp(1.12rem,4.1vw,1.4rem)] font-black leading-[1.15] text-slate-900 sm:max-w-[20ch] sm:text-2xl md:text-4xl lg:text-[2.65rem]">
                   Cachoeiras e trilhas mais buscadas
                 </h2>
               </div>
@@ -689,29 +696,29 @@ export function Home() {
             <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <span className="inline-flex rounded-full bg-[#e58b55] px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-white sm:text-[11px]">
-                  Blog da Chapada dos Veadeiros
+                  Revista da Chapada dos Veadeiros
                 </span>
-                <h2 className="mt-3 max-w-[18ch] text-balance text-2xl font-black leading-[1.12] text-slate-900 sm:max-w-none md:text-4xl">
-                  Últimas Notícias da Chapada dos Veadeiros
+                <h2 className="mt-3 max-w-full text-balance text-[clamp(1.12rem,4.05vw,1.36rem)] font-black leading-[1.15] text-slate-900 sm:max-w-none sm:text-2xl md:text-4xl">
+                  Últimas notícias da Chapada dos Veadeiros
                 </h2>
               </div>
               <Link
                 className="shrink-0 text-xs font-extrabold uppercase tracking-[0.12em] text-cerrado-700 transition hover:text-[#df8350]"
-                to="/blog"
+                to="/revista"
               >
-                Ver Todos
+                Ver tudo
               </Link>
             </div>
-            <div className="mt-6 divide-y divide-slate-200">
-              {latestPosts.map((post) => (
-                <Link key={post.href} to={post.href} className="block py-4 transition first:pt-1 hover:bg-slate-50/80">
-                  <h3 className="text-lg font-bold normal-case leading-snug tracking-tight text-slate-900">
-                    {post.title}
-                  </h3>
-                  <p className="mt-1 text-sm text-slate-500">{post.excerpt}</p>
-                </Link>
-              ))}
-            </div>
+            {revistaLoading ? <p className="mt-6 text-sm text-slate-600">Carregando matérias…</p> : null}
+            {revistaError ? <p className="mt-6 text-sm text-amber-800">{revistaError}</p> : null}
+            {!revistaLoading && !revistaError && revistaLatest.length === 0 ? (
+              <p className="mt-6 text-sm text-slate-600">Em breve novas matérias na Revista.</p>
+            ) : null}
+            {!revistaLoading && !revistaError && revistaLatest.length > 0 ? (
+              <div className="mt-6">
+                <LatestRevistaLayouts posts={revistaLatest} />
+              </div>
+            ) : null}
           </section>
 
           <section className="mt-5 grid gap-8 rounded-[1.75rem] border border-white/10 bg-gradient-to-br from-[#142a52] via-[#172f59] to-[#0f203f] p-6 text-white shadow-xl shadow-slate-950/25 md:grid-cols-[0.85fr_1.15fr] md:p-8">
@@ -719,7 +726,7 @@ export function Home() {
               <span className="inline-flex rounded-full bg-[#e58b55] px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-white sm:text-[11px]">
                 Mapa interativo
               </span>
-              <h2 className="mt-4 max-w-[20ch] text-balance text-2xl font-black leading-[1.12] md:max-w-none md:text-4xl lg:text-5xl">
+              <h2 className="mt-4 max-w-full text-balance text-[clamp(1.12rem,4.05vw,1.38rem)] font-black leading-[1.14] md:max-w-none md:text-4xl lg:text-5xl">
                 Explore a Chapada dos Veadeiros pelo mapa interativo
               </h2>
               <p className="mt-4 text-sm leading-relaxed text-white/85 md:text-[0.95rem]">

@@ -1,13 +1,43 @@
 import type { FastifyRequest } from "fastify";
 import { z } from "zod";
-import { WATERFALL_MAP_PAGE_SLUGS } from "../constants/waterfallMapPageSlugs.js";
+import { WATERFALL_MAP_PAGE_SLUGS, resolvePageSlugAlias } from "../constants/waterfallMapPageSlugs.js";
 import { prisma } from "../utils/prisma.js";
 
 const paginationSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
-  perPage: z.coerce.number().int().positive().max(50).default(12),
+  perPage: z.coerce.number().int().positive().max(96).default(24),
   search: z.string().optional(),
 });
+
+const postsLatestSchema = z.object({
+  take: z.coerce.number().int().min(1).max(8).default(8),
+});
+
+/** Listagem pública mais leve das últimas matérias (home / destaques). */
+export async function listPostsLatest(request: FastifyRequest) {
+  const query = postsLatestSchema.parse(request.query);
+
+  const items = await prisma.post.findMany({
+    where: { status: "PUBLISHED" },
+    orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
+    take: query.take,
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      excerpt: true,
+      featuredImage: true,
+      seoDescription: true,
+      publishedAt: true,
+      categories: {
+        select: { name: true, slug: true },
+        take: 2,
+      },
+    },
+  });
+
+  return { items };
+}
 
 export async function listPosts(request: FastifyRequest) {
   const query = paginationSchema.parse(request.query);
@@ -27,7 +57,7 @@ export async function listPosts(request: FastifyRequest) {
   const [items, total] = await Promise.all([
     prisma.post.findMany({
       where,
-      orderBy: { publishedAt: "desc" },
+      orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
       skip: (query.page - 1) * query.perPage,
       take: query.perPage,
       include: { categories: true, tags: true },
@@ -41,8 +71,8 @@ export async function listPosts(request: FastifyRequest) {
 export async function getPostBySlug(request: FastifyRequest) {
   const params = z.object({ slug: z.string().min(1) }).parse(request.params);
 
-  return prisma.post.findUniqueOrThrow({
-    where: { slug: params.slug },
+  return prisma.post.findFirstOrThrow({
+    where: { slug: params.slug, status: "PUBLISHED" },
     include: { categories: true, tags: true },
   });
 }
@@ -72,9 +102,10 @@ export async function listAttractionsCatalog() {
 
 export async function getPageBySlug(request: FastifyRequest) {
   const params = z.object({ slug: z.string().min(1) }).parse(request.params);
+  const slug = resolvePageSlugAlias(params.slug);
 
   return prisma.page.findUniqueOrThrow({
-    where: { slug: params.slug },
+    where: { slug },
   });
 }
 

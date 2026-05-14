@@ -1,23 +1,31 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter, Navigate, useParams } from "react-router-dom";
 import { SiteLayout } from "../layouts/SiteLayout";
 import { Article } from "../pages/Article";
 import { Attractions } from "../pages/Attractions";
-import { Blog } from "../pages/Blog";
 import { Contact } from "../pages/Contact";
 import { DynamicPage } from "../pages/DynamicPage";
 import { Home } from "../pages/Home";
 import { ProductDetail } from "../pages/ProductDetail";
+import { Revista } from "../pages/Revista";
 import { StaticPage } from "../pages/StaticPage";
+
+function LegacyBlogSlugRedirect() {
+  const { slug } = useParams();
+
+  return <Navigate replace to={slug ? `/revista/${slug}` : "/revista"} />;
+}
 
 export const router = createBrowserRouter([
   {
     element: <SiteLayout />,
     children: [
       { path: "/", element: <Home /> },
-      { path: "/blog", element: <Blog /> },
-      { path: "/blog/:slug", element: <Article /> },
+      { path: "/revista", element: <Revista /> },
+      { path: "/revista/:slug", element: <Article /> },
+      { path: "/blog", element: <Navigate replace to="/revista" /> },
+      { path: "/blog/:slug", element: <LegacyBlogSlugRedirect /> },
       { path: "/atrativos", element: <Attractions /> },
-      { path: "/passeios", element: <Navigate to="/atrativos" replace /> },
+      { path: "/passeios", element: <Navigate replace to="/atrativos" /> },
       { path: "/passeios/:slug", element: <ProductDetail /> },
       {
         path: "/faq",

@@ -21,3 +21,16 @@ export const WATERFALL_MAP_PAGE_SLUGS = [
   "parque-nacional-chapada-veadeiros-canions-carioquinhas-sao-jorge",
   "cachoeira-macacao-guia-chapada-veadeiros-sao-joao-alianca",
 ] as const;
+
+/**
+ * URLs antigas — ex. “poco-san” em vez de “poco-são”. Manter alinhado com `shared/src/pageSlugAliases.ts`.
+ */
+const PAGE_SLUG_ALIAS_MAP: Readonly<Record<string, string>> = {
+  "cachoeira-almecegas-poco-san-bento-guia-chapada-veadeiros":
+    "cachoeira-almecegas-poco-sao-bento-guia-chapada-veadeiros",
+};
+
+export function resolvePageSlugAlias(slug: string): string {
+  const canon = PAGE_SLUG_ALIAS_MAP[slug];
+  return typeof canon === "string" ? canon : slug;
+}

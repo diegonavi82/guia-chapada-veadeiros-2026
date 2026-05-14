@@ -8,6 +8,7 @@ import {
   listCategories,
   listPages,
   listPosts,
+  listPostsLatest,
   listProducts,
 } from "../controllers/content.controller.js";
 import { listInstagramMedia } from "../controllers/instagram.controller.js";
@@ -17,6 +18,7 @@ export async function publicRoutes(app: FastifyInstance) {
   app.get("/health", async () => ({ ok: true }));
   app.post("/contact", postContact);
   app.post("/waitlist", postWaitlist);
+  app.get("/posts/latest", listPostsLatest);
   app.get("/posts", listPosts);
   app.get("/posts/:slug", getPostBySlug);
   app.get("/pages", listPages);

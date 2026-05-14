@@ -6,7 +6,7 @@ import mysql from "mysql2/promise";
 dotenv.config();
 
 const siteUrl = (process.env.CLIENTE_BASE_URL ?? "https://guiadachapadaveadeiros.com").replace(/\/$/, "");
-const staticRoutes = ["/", "/blog", "/atrativos", "/faq", "/contato", "/busca"];
+const staticRoutes = ["/", "/revista", "/atrativos", "/faq", "/contato", "/busca"];
 const publicDir = path.resolve("frontend/cliente/public");
 
 async function getDynamicRoutes() {
@@ -21,7 +21,7 @@ async function getDynamicRoutes() {
   await connection.end();
 
   return [
-    ...posts.map((item) => ({ loc: `/blog/${item.slug}`, lastmod: item.updated_at })),
+    ...posts.map((item) => ({ loc: `/revista/${item.slug}`, lastmod: item.updated_at })),
     ...pages.map((item) => ({ loc: `/${item.slug}`, lastmod: item.updated_at })),
     ...products.map((item) => ({ loc: `/passeios/${item.slug}`, lastmod: item.updated_at })),
   ];
