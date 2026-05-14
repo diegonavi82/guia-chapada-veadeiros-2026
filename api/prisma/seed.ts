@@ -157,7 +157,7 @@ const postsToStrip = await prisma.post.findMany({
   where: { slug: { notIn: [contratarGuiaSlug, melhorEpocaSlug] } },
   select: { id: true },
 });
-const orphanIds = postsToStrip.map((p) => p.id);
+const orphanIds = postsToStrip.map((p: { id: number }) => p.id);
 if (orphanIds.length > 0) {
   await prisma.seoMetadata.deleteMany({
     where: {
