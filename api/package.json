@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "main": "dist/server.js",
+  "main": "dist/src/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "node ../scripts/exec-pkg.mjs prisma/build/index.js generate && node ../scripts/exec-pkg.mjs typescript/lib/tsc.js -p tsconfig.json",
-    "start": "node dist/server.js",
+    "start": "node dist/src/server.js",
     "typecheck": "node ../scripts/exec-pkg.mjs prisma/build/index.js generate && node ../scripts/exec-pkg.mjs typescript/lib/tsc.js -p tsconfig.json --noEmit",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
