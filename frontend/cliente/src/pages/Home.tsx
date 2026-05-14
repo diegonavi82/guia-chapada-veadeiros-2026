@@ -6,6 +6,8 @@ import { wpUploadsAssets as Wp } from "../config/wpUploadsAssets";
 import { WaitlistModal } from "../components/WaitlistModal";
 import { LatestRevistaLayouts } from "../components/revista/LatestRevistaLayouts";
 import type { RevistaTeaserPost } from "../components/revista/types";
+import { mergeRevistaTeaserPosts } from "../data/mergeRevistaTeaserPosts";
+import { REVISTA_FALLBACK_POSTS } from "../data/revistaFallbackPosts";
 import { Seo } from "../seo/Seo";
 import { apiGet } from "../services/api";
 
@@ -333,13 +335,16 @@ export function Home() {
     apiGet<{ items: RevistaTeaserPost[] }>("/posts/latest?take=8")
       .then((payload) => {
         if (isMounted) {
-          setRevistaLatest(payload.items);
+          const extra =
+            payload.items.length < REVISTA_FALLBACK_POSTS.length ? REVISTA_FALLBACK_POSTS : [];
+          setRevistaLatest(mergeRevistaTeaserPosts(payload.items, extra));
           setRevistaError(null);
         }
       })
       .catch(() => {
         if (isMounted) {
-          setRevistaError("Não foi possível carregar as últimas matérias da Revista.");
+          setRevistaLatest(mergeRevistaTeaserPosts([], REVISTA_FALLBACK_POSTS));
+          setRevistaError(null);
         }
       })
       .finally(() => {
@@ -545,7 +550,7 @@ export function Home() {
               className="absolute inset-0 bg-gradient-to-br from-[#0a1814]/92 via-[#0f2420]/78 to-[#163d33]/70"
               aria-hidden
             />
-            <div className="gcv-hero-overlay-text absolute inset-0 z-[1] flex flex-col justify-center overflow-hidden px-5 py-10 text-white max-sm:justify-start max-sm:px-[3rem] max-sm:pb-[3.25rem] max-sm:pt-10 sm:px-8 sm:py-14 md:px-12 md:py-20 lg:py-24">
+            <div className="gcv-hero-overlay-text absolute inset-0 z-[1] flex flex-col justify-center overflow-hidden px-16 py-10 text-white max-sm:justify-start max-sm:pb-[3.25rem] max-sm:pt-10 sm:py-14 md:px-20 md:py-20 lg:py-24">
               <button
                 type="button"
                 className="absolute left-2 top-1/2 z-[2] grid h-8 w-8 -translate-y-1/2 cursor-pointer place-items-center rounded-full border border-white/40 bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/18 sm:left-4 sm:h-9 sm:w-9"

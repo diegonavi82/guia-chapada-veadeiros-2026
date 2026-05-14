@@ -21,7 +21,7 @@ const payloadSchema = z
     if (e) {
       const ok = z.string().email().safeParse(e).success;
       if (!ok) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "E-mail invalido.", path: ["email"] });
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Email inválido.", path: ["email"] });
       }
     }
   })
@@ -49,7 +49,7 @@ function buildPlainBody(data: ContactPayload) {
     "",
     `Tipo: ${tipoLabel[data.tipo]}`,
     `Nome: ${data.nome}`,
-    data.email ? `E-mail para resposta: ${data.email}` : "E-mail para resposta: (não informado)",
+    data.email ? `Email para resposta: ${data.email}` : "Email para resposta: (não informado)",
     data.telefone ? `Telefone: ${data.telefone}` : "Telefone: (não informado)",
     "",
     "Mensagem:",
@@ -152,7 +152,7 @@ export async function postContact(request: FastifyRequest, reply: FastifyReply) 
   try {
     emailSent = await sendResendEmail(data, plain);
   } catch (err) {
-    request.log.error({ err }, "Falha ao enviar e-mail de contato (Resend)");
+    request.log.error({ err }, "Falha ao enviar email de contato (Resend)");
   }
 
   try {
@@ -175,7 +175,7 @@ export async function postContact(request: FastifyRequest, reply: FastifyReply) 
       ok: false,
       code: "NO_DELIVERY_CHANNELS",
       message:
-        "Os canais de envio não estão configurados no servidor. Configure e-mail (Resend) e SMS/WhatsApp (Twilio) no arquivo .env da API.",
+        "Os canais de envio não estão configurados no servidor. Configure email (Resend) e SMS/WhatsApp (Twilio) no arquivo .env da API.",
     });
   }
 

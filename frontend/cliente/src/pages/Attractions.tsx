@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { WaterfallRegionMap } from "../components/WaterfallRegionMap";
 import { pageSlugHasWaterfallMap } from "../config/waterfallMap";
 import { detailImageByPageSlug, wpUploadsAssets } from "../config/wpUploadsAssets";
 import { Seo } from "../seo/Seo";
@@ -99,15 +100,7 @@ export function Attractions() {
                 <h1 className="mt-3 max-w-[24ch] text-balance text-2xl font-black leading-[1.12] text-slate-900 sm:max-w-none md:text-4xl lg:text-[2.65rem]">
                   Atrativos da Chapada
                 </h1>
-                <p className="mt-3 max-w-2xl text-sm text-slate-600 md:text-base">
-                  Os mesmos destaques clicáveis do mapa interativo — cachoeiras, trilhas e mirantes cadastrados
-                  no guia.
-                </p>
               </div>
-            </div>
-
-            <div className="mt-6 flex justify-end">
-              <span className="text-xs text-slate-500 tabular-nums">{visibleCards.length} atrativos</span>
             </div>
 
             {error ? (
@@ -162,6 +155,22 @@ export function Attractions() {
               <p className="mt-8 text-center text-slate-600">Nenhum atrativo encontrado no mapa.</p>
             ) : null}
           </div>
+
+          <section
+            className="mt-10 rounded-[1.75rem] border border-white/40 bg-white/90 p-5 shadow-xl shadow-slate-400/15 backdrop-blur-sm md:p-8"
+            aria-label="Mapa interativo dos atrativos na região"
+          >
+            <span className="inline-flex rounded-full bg-[#e58b55] px-3 py-1.5 text-[10px] font-black tracking-wide text-white sm:text-[11px]">
+              Mapa Interativo
+            </span>
+            <p className="mt-3 w-full max-w-none text-sm leading-relaxed text-slate-600">
+              Toque ou clique nas áreas do mapa sobre cada atrativo para abrir o guia correspondente — o mesmo mapa
+              interativo da página inicial.
+            </p>
+            <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200/90 bg-slate-50 shadow-inner ring-1 ring-black/5">
+              <WaterfallRegionMap embedded />
+            </div>
+          </section>
         </div>
       </section>
     </>

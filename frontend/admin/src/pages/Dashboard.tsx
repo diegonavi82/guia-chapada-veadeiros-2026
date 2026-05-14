@@ -135,7 +135,7 @@ function buildSeoAnalysis(item: ContentItem, section: SectionKey, fallbackFocusK
     {
       label: "Slug amigável",
       ok: item.slug.length > 0 && item.slug.length <= 80 && !/[A-Z_\s]/.test(item.slug),
-      hint: "Use letras minúsculas, hífens e até 80 caracteres.",
+      hint: "Use letras minúsculas até 80 caracteres (formato de URL do site).",
     },
     {
       label: "Tamanho do conteúdo",
@@ -143,24 +143,24 @@ function buildSeoAnalysis(item: ContentItem, section: SectionKey, fallbackFocusK
       hint: `${words} palavras. Recomenda-se pelo menos 300.`,
     },
     {
-      label: "Frase-chave no título",
+      label: "Frase chave no título",
       ok: keyword ? normalizedTitle.includes(keyword) : false,
-      hint: keyword ? "A frase-chave deve aparecer no título SEO." : "Informe uma frase-chave foco.",
+      hint: keyword ? "A frase chave deve aparecer no título SEO." : "Informe uma frase chave de foco.",
     },
     {
-      label: "Frase-chave na descrição",
+      label: "Frase chave na descrição",
       ok: keyword ? normalizedDescription.includes(keyword) : false,
-      hint: keyword ? "A frase-chave deve aparecer na meta description." : "Informe uma frase-chave foco.",
+      hint: keyword ? "A frase chave deve aparecer na meta description." : "Informe uma frase chave de foco.",
     },
     {
-      label: "Frase-chave no slug",
+      label: "Frase chave no slug",
       ok: keyword ? normalizedSlug.includes(keyword) : false,
-      hint: keyword ? "A frase-chave deve aparecer no slug." : "Informe uma frase-chave foco.",
+      hint: keyword ? "A frase chave deve aparecer no slug." : "Informe uma frase chave de foco.",
     },
     {
-      label: "Densidade da frase-chave",
+      label: "Densidade da frase chave",
       ok: keyword ? keywordCount >= 2 : false,
-      hint: keyword ? `${keywordCount} ocorrências no conteúdo.` : "Informe uma frase-chave foco.",
+      hint: keyword ? `${keywordCount} ocorrências no conteúdo.` : "Informe uma frase chave de foco.",
     },
     {
       label: "Subtítulos",

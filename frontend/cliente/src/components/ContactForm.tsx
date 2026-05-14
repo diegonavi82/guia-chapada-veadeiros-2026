@@ -73,11 +73,11 @@ export function ContactForm() {
   }
 
   return (
-    <div className="mx-auto mt-12 max-w-2xl rounded-2xl border border-slate-200/80 bg-white p-8 shadow-[0_20px_50px_rgba(15,35,48,0.08)] md:p-10">
+    <div className="flex h-full min-h-0 flex-col rounded-[1.75rem] border border-white/40 bg-white/90 p-5 shadow-xl shadow-slate-400/15 ring-1 ring-black/5 backdrop-blur-sm md:p-8">
       <h2 className="text-xl font-bold text-cerrado-900">Envie uma mensagem</h2>
       <p className="mt-2 text-sm text-slate-600">
         Preencha os campos e clique em <strong className="text-cerrado-800">Enviar</strong>. A mensagem é entregue
-        pela API do site (e-mail para atendimento, SMS e WhatsApp quando configurados no servidor — Resend e
+        pela API do site (email para atendimento, SMS e WhatsApp quando configurados no servidor — Resend e
         Twilio).
       </p>
 
@@ -95,7 +95,7 @@ export function ContactForm() {
       ) : null}
 
       {!sent ? (
-        <form onSubmit={onSubmit} className="mt-8 space-y-6">
+        <form onSubmit={onSubmit} className="mt-8 flex min-h-0 flex-1 flex-col space-y-6">
           <div>
             <label
               htmlFor="contato-nome"
@@ -145,7 +145,7 @@ export function ContactForm() {
                 htmlFor="contato-email"
                 className="block text-xs font-semibold uppercase tracking-wide text-cerrado-700"
               >
-                E-mail (opcional)
+                Email (opcional)
               </label>
               <input
                 id="contato-email"
@@ -173,12 +173,12 @@ export function ContactForm() {
                 value={telefone}
                 onChange={(ev) => setTelefone(ev.target.value)}
                 className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 text-slate-900 shadow-sm outline-none ring-cerrado-500/40 transition focus:border-cerrado-500 focus:ring-2"
-                placeholder="(62) 99999-9999"
+                placeholder="(62) 99999 9999"
               />
             </div>
           </div>
 
-          <div>
+          <div className="flex min-h-0 flex-1 flex-col">
             <label
               htmlFor="contato-msg"
               className="block text-xs font-semibold uppercase tracking-wide text-cerrado-700"
@@ -194,7 +194,7 @@ export function ContactForm() {
               maxLength={4000}
               value={mensagem}
               onChange={(ev) => setMensagem(ev.target.value)}
-              className="mt-2 w-full resize-y rounded-lg border border-slate-200 px-4 py-3 text-slate-900 shadow-sm outline-none ring-cerrado-500/40 transition focus:border-cerrado-500 focus:ring-2"
+              className="mt-2 min-h-[8.5rem] flex-1 resize-y rounded-lg border border-slate-200 px-4 py-3 text-slate-900 shadow-sm outline-none ring-cerrado-500/40 transition focus:border-cerrado-500 focus:ring-2"
               placeholder="Conte como podemos ajudar..."
             />
           </div>
@@ -203,7 +203,7 @@ export function ContactForm() {
             <p className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">{error}</p>
           ) : null}
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-start">
+          <div className="mt-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-start">
             <button
               type="submit"
               disabled={loading}

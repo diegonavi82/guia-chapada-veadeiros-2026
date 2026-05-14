@@ -35,7 +35,7 @@ export function collectPostPublishIssues(payload: PublishPostPayload): string[] 
     );
   }
   if (!kw || kw.length < 2 || kw.length > 120) {
-    issues.push(`SEO: frase-chave foco obrigatória (até 120 caracteres).`);
+    issues.push(`SEO: frase chave de foco obrigatória (até 120 caracteres).`);
   }
 
   const normalizedKw = kw?.toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -45,21 +45,21 @@ export function collectPostPublishIssues(payload: PublishPostPayload): string[] 
 
   if (normalizedKw) {
     if (!nt.includes(normalizedKw)) {
-      issues.push("SEO: a frase-chave deve aparecer no título SEO.");
+      issues.push("SEO: a frase chave deve aparecer no título SEO.");
     }
     if (!nd.includes(normalizedKw)) {
-      issues.push("SEO: a frase-chave deve aparecer na meta description.");
+      issues.push("SEO: a frase chave deve aparecer na meta description.");
     }
     const slugWordsMatch =
       normalizedKw.split(/\s+/).filter(Boolean).every((segment) => segment.length <= 2 || ns.includes(segment)) &&
       /\S/.test(ns);
     if (!slugWordsMatch) {
-      issues.push("SEO: as palavras da frase-chave devem aparecer no slug (via hífens).");
+      issues.push("SEO: as palavras da frase chave devem aparecer no slug (endereço amigável).");
     }
   }
 
   if (!keywordsMeta || keywordsMeta.length < 24) {
-    issues.push(`SEO: palavras-chave (meta keywords) obrigatórias — sugira pelo menos algumas vírgulas (mín. 24 caracteres).`);
+    issues.push(`SEO: palavras chave (meta keywords) obrigatórias — sugira pelo menos algumas vírgulas (mín. 24 caracteres).`);
   }
 
   if (!payload.excerpt?.trim() || payload.excerpt.trim().length < 40) {

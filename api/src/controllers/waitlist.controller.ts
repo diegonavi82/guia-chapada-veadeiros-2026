@@ -30,14 +30,14 @@ const bodySchema = z
     if (!data.email && !data.phone) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Informe seu e-mail ou seu telefone (ou ambos).",
+        message: "Informe seu email ou seu telefone (ou ambos).",
         path: ["email"],
       });
     }
     if (data.email && !z.string().email().safeParse(data.email).success) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "E-mail inválido.",
+        message: "Email inválido.",
         path: ["email"],
       });
     }
@@ -86,9 +86,9 @@ export async function postWaitlist(request: FastifyRequest, reply: FastifyReply)
     let message: string;
     if (duplicateEmail && duplicatePhone) {
       message =
-        "Este e-mail e este telefone já estão cadastrados na lista de espera. Confira os dados ou use outros.";
+        "Este email e este telefone já estão cadastrados na lista de espera. Confira os dados ou use outros.";
     } else if (duplicateEmail) {
-      message = "Este e-mail já está cadastrado na lista de espera.";
+      message = "Este email já está cadastrado na lista de espera.";
     } else {
       message = "Este telefone já está cadastrado na lista de espera.";
     }

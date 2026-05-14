@@ -1,8 +1,16 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { ArticleAuthorCard } from "../components/revista/ArticleAuthorCard";
+import { ArticleShareBar } from "../components/revista/ArticleShareBar";
 import { Seo } from "../seo/Seo";
 import { apiGet } from "../services/api";
 import { rewriteHtmlMediaUrls, toPublicAssetUrl } from "../utils/localMediaUrl";
+import { formatPublicationDatePt } from "../utils/formatPublicationDatePt";
+import "../styles/gcv-post.css";
+
+const SITE_ORIGIN =
+  (typeof import.meta.env.VITE_SITE_ORIGIN === "string" && import.meta.env.VITE_SITE_ORIGIN.replace(/\/$/, "")) ||
+  "https://www.guiachapadaveadeiros.com";
 
 type ArticleData = {
   id: number;
@@ -64,6 +72,10 @@ export function Article() {
     article?.featuredImageAlt?.trim() ||
     (article?.title ? `${article.title} — foto de capa` : "Imagem de capa da matéria");
   const bodyHtml = article?.content ? rewriteHtmlMediaUrls(article.content) : "";
+  const sharePageUrl = `${SITE_ORIGIN}/revista/${slug}`;
+  const trimmedPub = article?.publishedAt?.trim() ?? "";
+  const publishedDateAttr = /^\d{4}-\d{2}-\d{2}/.test(trimmedPub) ? trimmedPub.slice(0, 10) : "";
+  const publishedFull = formatPublicationDatePt(article?.publishedAt);
 
   const structuredArticle = article
     ? ({
@@ -92,7 +104,7 @@ export function Article() {
     : undefined;
 
   return (
-    <article className="mx-auto max-w-4xl px-4 py-16">
+    <article className="Article-page mx-auto w-full max-w-4xl px-4 pb-10 pt-8 sm:px-6 sm:pb-14 sm:pt-12 md:px-8 md:py-16">
       <Seo
         title={documentTitle}
         description={metaTagDescription}
@@ -118,24 +130,46 @@ export function Article() {
             <img
               src={heroImage}
               alt={heroAlt}
-              className="mb-10 aspect-[16/9] w-full rounded-3xl object-cover"
+              className="mb-0 aspect-[16/9] w-full max-w-full rounded-2xl object-cover sm:rounded-3xl"
               loading="eager"
               fetchPriority="high"
             />
           ) : null}
-          <header>
-            <h1 className="text-5xl font-black text-cerrado-900">{article.title}</h1>
-            {article.excerpt ? <p className="mt-6 text-xl text-slate-700">{article.excerpt}</p> : null}
+          <ArticleShareBar
+            pageUrl={sharePageUrl}
+            shareTitle={article.title}
+            placement="afterHero"
+          />
+          <header className={heroImage ? "mt-6 sm:mt-10" : ""}>
+            <h1 className="break-words text-3xl font-black leading-tight text-cerrado-900 sm:text-4xl md:text-5xl">
+              {article.title}
+            </h1>
+            {article.excerpt ? (
+              <p className="mt-4 break-words text-lg text-slate-700 sm:mt-6 sm:text-xl">{article.excerpt}</p>
+            ) : null}
+            {publishedFull ? (
+              <p className="mt-3 text-base font-semibold tracking-tight text-slate-600 sm:mt-4">
+                <time dateTime={publishedDateAttr || undefined}>{publishedFull}</time>
+              </p>
+            ) : null}
             {article.seoFocusKeyword ? (
               <p className="mt-3 text-xs font-bold uppercase tracking-widest text-cerrado-600">
                 foco editorial: <span className="text-slate-800">{article.seoFocusKeyword}</span>
               </p>
             ) : null}
           </header>
-          <div
-            className="prose prose-lg mt-10 max-w-none"
-            dangerouslySetInnerHTML={{ __html: bodyHtml }}
-          />
+          <div className="Article-body mt-8 max-w-full overflow-x-auto sm:mt-10">
+            <div
+              className="prose prose-base max-w-none break-words prose-headings:break-words prose-p:break-words prose-pre:max-w-full prose-pre:overflow-x-auto prose-img:my-6 prose-img:w-full prose-img:max-w-full prose-img:rounded-2xl sm:prose-lg"
+              dangerouslySetInnerHTML={{ __html: bodyHtml }}
+            />
+          </div>
+          <ArticleAuthorCard>
+            <p>
+              Guia local credenciado pelo Cadastur (Ministério do Turismo) na Chapada dos Veadeiros, com anos de experiência em trilhas e atrativos em todas as épocas do ano.
+            </p>
+          </ArticleAuthorCard>
+          <ArticleShareBar pageUrl={sharePageUrl} shareTitle={article.title} placement="footer" />
         </>
       ) : null}
     </article>

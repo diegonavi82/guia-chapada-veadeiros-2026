@@ -1,17 +1,10 @@
 import { Link } from "react-router-dom";
+import { revistaListOverridesBySlug } from "../../config/wpUploadsAssets";
 import type { RevistaTeaserPost } from "./types";
+import { formatPublicationDatePt } from "../../utils/formatPublicationDatePt";
 import { toPublicAssetUrl } from "../../utils/localMediaUrl";
 
 type Variant = "capa" | "destaque" | "lista" | "compacto";
-
-function formatDatePt(iso?: string | null) {
-  if (!iso) return "";
-  try {
-    return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short" }).format(new Date(iso));
-  } catch {
-    return "";
-  }
-}
 
 export function RevistaTeaserCard({
   post,
@@ -20,17 +13,21 @@ export function RevistaTeaserCard({
   post: RevistaTeaserPost;
   variant: Variant;
 }) {
+  const ov = revistaListOverridesBySlug[post.slug];
   const cat = post.categories?.[0]?.name;
   const dek = post.excerpt || post.seoDescription || "";
-  const img = post.featuredImage ? (toPublicAssetUrl(post.featuredImage) ?? post.featuredImage) : null;
-  const dateShort = formatDatePt(post.publishedAt);
+  const title = ov?.title ?? post.title;
+  const fromApi = post.featuredImage ? (toPublicAssetUrl(post.featuredImage) ?? post.featuredImage) : null;
+  const fromOverride = ov?.featuredImage ? (toPublicAssetUrl(ov.featuredImage) ?? ov.featuredImage) : null;
+  const img = fromApi ?? fromOverride;
+  const dateLabel = formatPublicationDatePt(post.publishedAt);
 
   if (variant === "capa") {
     return (
       <Link to={`/revista/${post.slug}`} className="group Revista-teaser Revista-teaser--capa">
         <div className="Revista-teaser__media Revista-teaser__media--wide">
           {img ? (
-                <img src={img} alt={post.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]" loading="lazy" />
+                <img src={img} alt={title} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]" loading="lazy" />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-200 to-slate-400 text-slate-600">
               Chapada dos Veadeiros
@@ -39,9 +36,9 @@ export function RevistaTeaserCard({
         </div>
         <div className="Revista-teaser__body Revista-teaser__body--capa">
           {cat ? <span className="Revista-chip Revista-chip--live">{cat}</span> : <span className="Revista-chip Revista-chip--live">Revista</span>}
-          <h3 className="Revista-teaser__title-lg">{post.title}</h3>
+          <h3 className="Revista-teaser__title-lg">{title}</h3>
           {dek ? <p className="Revista-teaser__dek">{dek}</p> : null}
-          {dateShort ? <p className="Revista-teaser__meta">{dateShort}</p> : null}
+          {dateLabel ? <p className="Revista-teaser__meta">{dateLabel}</p> : null}
         </div>
       </Link>
     );
@@ -58,16 +55,16 @@ export function RevistaTeaserCard({
     <Link to={`/revista/${post.slug}`} className={`group Revista-teaser Revista-teaser--${variant}`}>
       {img ? (
         <div className="Revista-teaser__media">
-          <img src={img} alt={post.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" loading="lazy" />
+          <img src={img} alt={title} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" loading="lazy" />
         </div>
       ) : (
         <div className="Revista-teaser__media Revista-teaser__media--empty" />
       )}
       <div className="Revista-teaser__body">
         {cat ? <span className="Revista-chip">{cat}</span> : <span className="Revista-chip">Matéria</span>}
-        <h3 className={titleCls}>{post.title}</h3>
+        <h3 className={titleCls}>{title}</h3>
         {variant !== "compacto" && dek ? <p className="Revista-teaser__dek Revista-teaser__dek--short">{dek}</p> : null}
-        {dateShort ? <p className="Revista-teaser__meta">{dateShort}</p> : null}
+        {dateLabel ? <p className="Revista-teaser__meta">{dateLabel}</p> : null}
       </div>
     </Link>
   );

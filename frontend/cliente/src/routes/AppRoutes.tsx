@@ -8,6 +8,8 @@ import { Home } from "../pages/Home";
 import { ProductDetail } from "../pages/ProductDetail";
 import { Revista } from "../pages/Revista";
 import { StaticPage } from "../pages/StaticPage";
+import { ContratarGuiaArtigo } from "../pages/artigos/ContratarGuiaArtigo";
+import ArtigoMelhorEpoca from "../pages/artigos/melhor-epoca-visitar-chapada-dos-veadeiros";
 
 function LegacyBlogSlugRedirect() {
   const { slug } = useParams();
@@ -21,9 +23,13 @@ export const router = createBrowserRouter([
     children: [
       { path: "/", element: <Home /> },
       { path: "/revista", element: <Revista /> },
+      { path: "/revista/contratar-guia-local-chapada-veadeiros", element: <ContratarGuiaArtigo /> },
+      { path: "/revista/melhor-epoca-visitar-chapada-dos-veadeiros", element: <ArtigoMelhorEpoca /> },
       { path: "/revista/:slug", element: <Article /> },
       { path: "/blog", element: <Navigate replace to="/revista" /> },
       { path: "/blog/:slug", element: <LegacyBlogSlugRedirect /> },
+      { path: "/contratar-guia-local-chapada-veadeiros", element: <Navigate replace to="/revista/contratar-guia-local-chapada-veadeiros" /> },
+      { path: "/melhor-epoca-visitar-chapada-dos-veadeiros", element: <Navigate replace to="/revista/melhor-epoca-visitar-chapada-dos-veadeiros" /> },
       { path: "/atrativos", element: <Attractions /> },
       { path: "/passeios", element: <Navigate replace to="/atrativos" /> },
       { path: "/passeios/:slug", element: <ProductDetail /> },

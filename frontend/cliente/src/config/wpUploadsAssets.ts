@@ -17,6 +17,8 @@ export const wpUploadsAssets = {
   cristais: "/imagens/cachoeira-cristais-veu-noiva-guia-chapada-veadeiros-alto-paraiso.jpg",
   pocoEncantado: "/imagens/cachoeira-poco-encantado-guia-chapada-veadeiros-teresina-4.jpg",
   macaquinhos: "/imagens/cachoeira-macaquinhos-guia-chapada-veadeiros-6.jpg",
+  /** Retrato do autor nos cartões da revista — ficheiro em `public/uploads/revista/` (SEO no nome do ficheiro). */
+  articleAuthorDiegoPortrait: "/uploads/revista/diego-navi-marques-carvalho-guia-chapada-veadeiros.jpg",
   /** Mesma arte do mapa interativo em produção (`imagem` + `<map>` em guiachapadaveadeiros.com). */
   mapaCachoeiras2022: "/imagens/cachoeiras-guia-chapada-veadeiros-2022.jpg",
   mapaCachoeiras2020: "/imagens/guia-chapada-veadeiros-mapa-cachoeiras-2020.jpg",
@@ -32,4 +34,16 @@ export const detailImageByPageSlug: Record<string, string> = {
   "cachoeira-cristais-guia-chapada-veadeiros-alto-paraiso": wpUploadsAssets.cristais,
   "cachoeira-poco-encantado-guia-chapada-veadeiros-teresina-de-goias": wpUploadsAssets.pocoEncantado,
   "cachoeira-macaquinhos-guia-chapada-veadeiros-sao-joao-alianca": wpUploadsAssets.macaquinhos,
+};
+
+/** Home / página Revista: foto e título quando a API não cobre. */
+export const revistaListOverridesBySlug: Record<string, { featuredImage?: string; title?: string }> = {
+  "melhor-epoca-visitar-chapada-dos-veadeiros": {
+    featuredImage: "/uploads/artigos/melhor-epoca/guia-diego-navi-palipalan-via-lactea-chapada-veadeiros.png",
+    title: "Melhor época para visitar a Chapada dos Veadeiros? Guia mês a mês",
+  },
+  "contratar-guia-local-chapada-veadeiros": {
+    featuredImage: "/uploads/revista/contratar-guia-artigo/grupo-cachoeira-monumental-guia-chapada-veadeiros.png",
+    title: "Por que contratar um guia local na Chapada dos Veadeiros?",
+  },
 };

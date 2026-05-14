@@ -7,13 +7,15 @@ type StaticPageProps = {
   children?: ReactNode;
   /** quando false, o conteúdo não usa a classe typography (ideal para formulários) */
   prose?: boolean;
+  /** por omissão: mx-auto max-w-5xl px-4 py-16 */
+  articleClassName?: string;
 };
 
-export function StaticPage({ title, description, children, prose = true }: StaticPageProps) {
+export function StaticPage({ title, description, children, prose = true, articleClassName }: StaticPageProps) {
   const bodyClass = prose ? "prose prose-lg mt-10 max-w-none" : "mt-10";
 
   return (
-    <article className="mx-auto max-w-5xl px-4 py-16">
+    <article className={articleClassName ?? "mx-auto max-w-5xl px-4 py-16"}>
       <Seo title={title} description={description} canonical={window.location.pathname} />
       <p className="text-sm font-bold uppercase tracking-[0.25em] text-cerrado-500">
         Guia Chapada

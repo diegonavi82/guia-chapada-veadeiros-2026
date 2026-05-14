@@ -101,12 +101,12 @@ export function WaitlistModal({ open, onClose }: Props) {
           Lista de espera
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-slate-600">
-          Informe seu e-mail e/ou WhatsApp para avisarmos quando as reservas online estiverem abertas.
+          Informe seu email e/ou WhatsApp para avisarmos quando as reservas online estiverem abertas.
         </p>
 
         <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit}>
           <label className="block">
-            <span className="text-xs font-bold uppercase tracking-wide text-slate-500">E-mail</span>
+            <span className="text-xs font-bold uppercase tracking-wide text-slate-500">Email</span>
             <input
               autoComplete="email"
               className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-slate-900 shadow-inner outline-none ring-[#df8350]/0 transition focus:border-[#df8350]/55 focus:ring-4 focus:ring-[#df8350]/18"
@@ -126,7 +126,7 @@ export function WaitlistModal({ open, onClose }: Props) {
               inputMode="tel"
               name="phone"
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="(62) 99999-9999"
+              placeholder="(62) 99999 9999"
               type="tel"
               value={phone}
             />
