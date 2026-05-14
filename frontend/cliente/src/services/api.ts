@@ -1,9 +1,41 @@
+import type { SiteLocale } from "../i18n/types";
+import { SITE_LOCALES } from "../i18n/types";
+import i18n from "../i18n/config";
+
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3333/api";
 
+function currentSiteLocale(): SiteLocale {
+  const lng = i18n.language;
+  return SITE_LOCALES.includes(lng as SiteLocale) ? (lng as SiteLocale) : "pt";
+}
+
+function acceptLanguageHeader(): string {
+  const loc = currentSiteLocale();
+  if (loc === "en") {
+    return "en-US,en;q=0.9,pt-BR;q=0.6";
+  }
+  if (loc === "es") {
+    return "es-419,es;q=0.9,pt-BR;q=0.5";
+  }
+  return "pt-BR,pt;q=0.9,en;q=0.3";
+}
+
+function appendLocaleQuery(path: string): string {
+  if (/[?&]locale=/.test(path)) {
+    return path;
+  }
+  const loc = currentSiteLocale();
+  const sep = path.includes("?") ? "&" : "?";
+
+  return `${path}${sep}locale=${loc}`;
+}
+
 export async function apiGet<T>(path: string): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`, {
+  const resolvedPath = appendLocaleQuery(path.startsWith("/") ? path : `/${path}`);
+  const response = await fetch(`${apiBaseUrl}${resolvedPath}`, {
     headers: {
       Accept: "application/json",
+      "Accept-Language": acceptLanguageHeader(),
     },
   });
 
@@ -20,6 +52,7 @@ export async function apiPostContact<TBody extends object, TRes>(path: string, b
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
+      "Accept-Language": acceptLanguageHeader(),
     },
     body: JSON.stringify(body),
   });
@@ -86,6 +119,7 @@ export async function apiPostWaitlist(body: {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
+      "Accept-Language": acceptLanguageHeader(),
     },
     body: JSON.stringify(body),
   });

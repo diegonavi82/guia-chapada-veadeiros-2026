@@ -52,6 +52,12 @@ export async function buildApp() {
       });
     }
 
+    const sc = typeof (error as { statusCode?: unknown }).statusCode === "number" ? (error as { statusCode: number }).statusCode : undefined;
+    if (typeof sc === "number" && sc >= 400 && sc < 600 && error instanceof Error) {
+      request.log.warn({ err: error, statusCode: sc }, "request error");
+      return reply.status(sc).send({ message: error.message });
+    }
+
     return reply.send(error);
   });
 

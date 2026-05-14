@@ -1,0 +1,49 @@
+{
+  "nav": {
+    "home": "Home",
+    "revista": "Magazine",
+    "atrativos": "Attractions",
+    "contato": "Contact",
+    "search": "Search"
+  },
+  "topBar": {
+    "contacts": "+55 62 98250-6891 | contato@guiachapadaveadeiros.com"
+  },
+  "footer": {
+    "taglineTitle": "Chapada Veadeiros Guide",
+    "taglineBody": "Itineraries, waterfalls, trails and experiences with a local guide so you can better plan your Chapada dos Veadeiros trip.",
+    "instagramHandle": "@guiachapadaveadeiros",
+    "cadasturAlt": "Cadastur seal — Chapada Veadeiros Guide",
+    "colPlan": "Plan your trip",
+    "linkShop": "Tours & services",
+    "linkLodging": "Lodging",
+    "linkContact": "Contact",
+    "linkWhatsapp": "WhatsApp",
+    "colSupport": "Support",
+    "whatsappLabel": "WhatsApp:",
+    "emailLabel": "Email:",
+    "baseLabel": "Based in:",
+    "baseValue": "Chapada dos Veadeiros, Goiás — Brazil",
+    "copyright": "© All rights reserved — 2026 | CNPJ 24.354.289/0001-05 | Built by Diego Marques",
+    "nationalParkAlt": "Chapada dos Veadeiros"
+  },
+  "logoAlt": "Chapada Veadeiros Guide logo",
+  "layout": {
+    "mainNavAria": "Main navigation",
+    "searchAria": "Search"
+  },
+  "static": {
+    "faq": {
+      "title": "FAQ",
+      "description": "Frequently asked questions — FAQ markup ready."
+    },
+    "search": {
+      "title": "Search",
+      "description": "Search articles, attractions and tours."
+    },
+    "category": {
+      "title": "Category: {{slug}}",
+      "description": "Category archive preserved from migration (slug: {{slug}})."
+    }
+  }
+}

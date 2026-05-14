@@ -13,6 +13,6 @@ process.on("SIGINT", close);
 process.on("SIGTERM", close);
 
 await app.listen({
-  port: env.API_PORT,
+  port: Number(process.env.PORT || env.API_PORT || 3000),
   host: "0.0.0.0",
 });

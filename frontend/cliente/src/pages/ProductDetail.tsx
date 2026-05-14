@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { LangLink } from "../i18n/LangLink";
+import { useSiteLocale } from "../i18n/siteLocale";
+import { withLocalePrefix } from "../i18n/paths";
 import { Seo } from "../seo/Seo";
 import { apiGet } from "../services/api";
 import { rewriteHtmlMediaUrls, toPublicAssetUrl } from "../utils/localMediaUrl";
 import { wpUploadsAssets } from "../config/wpUploadsAssets";
+
+import type { SiteLocale } from "../i18n/types";
 
 type Category = { id: number; name: string; slug: string };
 
@@ -20,7 +25,7 @@ type ProductData = {
   categories: Category[];
 };
 
-function formatPrice(value: string | null | undefined) {
+function formatPrice(value: string | null | undefined, locale: SiteLocale) {
   if (value === null || value === undefined || value === "") {
     return null;
   }
@@ -28,13 +33,16 @@ function formatPrice(value: string | null | undefined) {
   if (Number.isNaN(n)) {
     return null;
   }
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(n);
+  const nfLocale = locale === "en" ? "en-US" : locale === "es" ? "es-419" : "pt-BR";
+
+  return new Intl.NumberFormat(nfLocale, { style: "currency", currency: "BRL" }).format(n);
 }
 
 const whatsappBase = "https://api.whatsapp.com/send?phone=5562982506891&text=";
 
 export function ProductDetail() {
   const { slug = "" } = useParams();
+  const locale = useSiteLocale();
   const [product, setProduct] = useState<ProductData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -61,14 +69,15 @@ export function ProductDetail() {
         <Seo title="Passeio não encontrado" description="Este passeio não foi encontrado." robots="noindex,follow" />
         <h1 className="text-4xl font-black text-cerrado-900">Passeio não encontrado</h1>
         <p className="mt-4 text-slate-600">{error}</p>
-        <Link className="mt-6 inline-block font-semibold text-[#df8350] underline" to="/atrativos">
+        <LangLink className="mt-6 inline-block font-semibold text-[#df8350] underline" to="/atrativos">
           Ver todos os atrativos
-        </Link>
+        </LangLink>
       </main>
     );
   }
 
-  const priceLabel = formatPrice(product.price);
+  const priceLabel = formatPrice(product.price, locale);
+  const passeioPath = withLocalePrefix(`/passeios/${product.slug}`, locale);
   const hero = toPublicAssetUrl(product.featuredImage) ?? product.featuredImage ?? wpUploadsAssets.parqueNacionalSalto;
   const mainHtml = rewriteHtmlMediaUrls(product.description);
   const text = `Olá! Quero informações sobre o passeio "${product.title}"`;
@@ -79,14 +88,14 @@ export function ProductDetail() {
       <Seo
         title={product.seoTitle || product.title}
         description={product.seoDescription || product.shortDescription || `Passeio ${product.title}`}
-        canonical={`/passeios/${product.slug}`}
+        canonical={passeioPath}
         ogImage={toPublicAssetUrl(product.featuredImage) ?? product.featuredImage ?? undefined}
       />
       <div className="mx-auto max-w-[1180px]">
         <p className="mb-6 text-sm">
-          <Link className="font-semibold text-[#df8350] transition hover:text-cerrado-700" to="/atrativos">
+          <LangLink className="font-semibold text-[#df8350] transition hover:text-cerrado-700" to="/atrativos">
             ← Todos os atrativos
-          </Link>
+          </LangLink>
         </p>
         <header className="gcv-detail-title">
           <h1>{product.title}</h1>

@@ -11,6 +11,8 @@ import { pageSlugHasWaterfallMap } from "../config/waterfallMap";
 import { detailImageByPageSlug } from "../config/wpUploadsAssets";
 import { Seo } from "../seo/Seo";
 import { apiGet } from "../services/api";
+import { useSiteLocale } from "../i18n/siteLocale";
+import { withLocalePrefix } from "../i18n/paths";
 import { rewriteHtmlMediaUrls, toPublicAssetUrl } from "../utils/localMediaUrl";
 
 function galleryItemsForSlug(slug: string): AttractionGalleryItem[] {
@@ -358,6 +360,7 @@ function SidebarInfoLine({ line }: { line: string }) {
 
 export function DynamicPage() {
   const { slug = "" } = useParams();
+  const locale = useSiteLocale();
   const navigate = useNavigate();
   const canonicalSlug = resolvePageSlugAlias(slug);
   const [page, setPage] = useState<PageData | null>(null);
@@ -370,7 +373,7 @@ export function DynamicPage() {
     }
 
     if (canonicalSlug !== slug) {
-      navigate(`/${canonicalSlug}`, { replace: true });
+      navigate(withLocalePrefix(`/${canonicalSlug}`, locale), { replace: true });
       return;
     }
 
@@ -398,7 +401,7 @@ export function DynamicPage() {
     return () => {
       cancelled = true;
     };
-  }, [slug, canonicalSlug, navigate]);
+  }, [slug, canonicalSlug, navigate, locale]);
 
   if (isLoading) {
     return <main className="mx-auto max-w-4xl px-4 py-16 text-slate-600">Carregando pagina...</main>;
@@ -435,7 +438,7 @@ export function DynamicPage() {
       <Seo
         title={page.seoTitle || page.title}
         description={page.seoDescription || page.excerpt || `Pagina ${page.title}`}
-        canonical={`/${page.slug}`}
+        canonical={withLocalePrefix(`/${page.slug}`, locale)}
         ogImage={ogImage}
       />
       <div className="mx-auto max-w-[1180px]">

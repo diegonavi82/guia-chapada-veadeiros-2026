@@ -1,5 +1,7 @@
-import { Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { WATERFALL_MAP_IMAGE_URL, waterfallMapHotspots } from "../config/waterfallMap";
+import { LangLink } from "../i18n/LangLink";
+import { stripLeadingLocale } from "../i18n/paths";
 
 type Props = {
   /** Caminho com barra inicial, ex.: `/cataratas-dos-couros-...` — marca o atrativo atual. */
@@ -9,6 +11,9 @@ type Props = {
 };
 
 export function WaterfallRegionMap({ activePath = "", embedded = false }: Props) {
+  const { pathname } = useLocation();
+  const pathnameSansLocale = stripLeadingLocale(pathname);
+
   const figure = (
     <figure className="gcv-detail-region-map__figure">
       <img
@@ -19,10 +24,11 @@ export function WaterfallRegionMap({ activePath = "", embedded = false }: Props)
       />
       <div className="gcv-detail-region-map__hotspots">
         {waterfallMapHotspots.map((spot) => {
-          const isCurrent = activePath === spot.href;
+          const isCurrent =
+            Boolean(activePath) && pathnameSansLocale === stripLeadingLocale(spot.href);
 
           return (
-            <Link
+            <LangLink
               key={spot.href}
               aria-current={isCurrent ? "page" : undefined}
               aria-label={spot.label}

@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet-async";
-import { Link } from "react-router-dom";
+import { LangLink } from "../../i18n/LangLink";
 import { ArticleAuthorCard } from "../../components/revista/ArticleAuthorCard";
 import { ArticleShareBar } from "../../components/revista/ArticleShareBar";
 import { wpUploadsAssets } from "../../config/wpUploadsAssets";
@@ -258,11 +258,11 @@ export default function ArtigoMelhorEpoca() {
       <div className="gcv-post-page">
         <div className="gcv-post-shell">
           <nav className="gcv-post-breadcrumb" aria-label="Caminho de navegação">
-            <Link to="/">Home</Link>
+            <LangLink to="/">Home</LangLink>
             <span className="sep">›</span>
-            <Link to="/revista">Revista</Link>
+            <LangLink to="/revista">Revista</LangLink>
             <span className="sep">›</span>
-            <Link to="/revista">Dicas</Link>
+            <LangLink to="/revista">Dicas</LangLink>
             <span className="sep">›</span>
             <span>Melhor Época para Visitar a Chapada</span>
           </nav>
@@ -277,9 +277,9 @@ export default function ArtigoMelhorEpoca() {
               decoding="async"
             />
             <div className="gcv-post-hero-overlay">
-              <Link to="/revista" className="gcv-post-category">
+              <LangLink to="/revista" className="gcv-post-category">
                 Planejamento de Viagem
-              </Link>
+              </LangLink>
               <h1>Melhor época para visitar a Chapada dos Veadeiros: guia completo mês a mês</h1>
             </div>
           </header>

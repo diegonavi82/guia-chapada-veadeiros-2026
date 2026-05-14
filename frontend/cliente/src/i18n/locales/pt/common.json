@@ -1,0 +1,49 @@
+{
+  "nav": {
+    "home": "Home",
+    "revista": "Revista",
+    "atrativos": "Atrativos",
+    "contato": "Fale Conosco",
+    "search": "Busca"
+  },
+  "topBar": {
+    "contacts": "+55 62 98250-6891 | contato@guiachapadaveadeiros.com"
+  },
+  "footer": {
+    "taglineTitle": "Guia Chapada Veadeiros",
+    "taglineBody": "Roteiros, cachoeiras, trilhas e experiências com guia local para você planejar melhor sua viagem pela Chapada dos Veadeiros.",
+    "instagramHandle": "@guiachapadaveadeiros",
+    "cadasturAlt": "Selo Cadastur Guia Chapada dos Veadeiros",
+    "colPlan": "Planeje sua viagem",
+    "linkShop": "Passeios e serviços",
+    "linkLodging": "Hospedagem",
+    "linkContact": "Contato",
+    "linkWhatsapp": "WhatsApp",
+    "colSupport": "Atendimento",
+    "whatsappLabel": "WhatsApp:",
+    "emailLabel": "Email:",
+    "baseLabel": "Base:",
+    "baseValue": "Chapada dos Veadeiros, Goiás",
+    "copyright": "© Todos os Direitos Reservados - 2026 | CNPJ 24.354.289/0001-05 | Desenvolvido por Diego Marques",
+    "nationalParkAlt": "Chapada dos Veadeiros"
+  },
+  "logoAlt": "Guia Chapada Veadeiros Logo",
+  "layout": {
+    "mainNavAria": "Navegação principal",
+    "searchAria": "Busca"
+  },
+  "static": {
+    "faq": {
+      "title": "FAQ",
+      "description": "Perguntas frequentes com schema FAQ preparado."
+    },
+    "search": {
+      "title": "Busca",
+      "description": "Busque artigos, atrativos e passeios."
+    },
+    "category": {
+      "title": "Categoria: {{slug}}",
+      "description": "Arquivo de categoria preservado da migração (slug: {{slug}})."
+    }
+  }
+}

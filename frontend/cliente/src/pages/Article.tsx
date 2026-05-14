@@ -2,15 +2,14 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ArticleAuthorCard } from "../components/revista/ArticleAuthorCard";
 import { ArticleShareBar } from "../components/revista/ArticleShareBar";
+import { SITE_ORIGIN } from "../config/siteOrigin";
+import { useSiteLocale } from "../i18n/siteLocale";
+import { withLocalePrefix } from "../i18n/paths";
 import { Seo } from "../seo/Seo";
 import { apiGet } from "../services/api";
 import { rewriteHtmlMediaUrls, toPublicAssetUrl } from "../utils/localMediaUrl";
 import { formatPublicationDatePt } from "../utils/formatPublicationDatePt";
 import "../styles/gcv-post.css";
-
-const SITE_ORIGIN =
-  (typeof import.meta.env.VITE_SITE_ORIGIN === "string" && import.meta.env.VITE_SITE_ORIGIN.replace(/\/$/, "")) ||
-  "https://www.guiachapadaveadeiros.com";
 
 type ArticleData = {
   id: number;
@@ -33,6 +32,7 @@ type ArticleData = {
 
 export function Article() {
   const { slug = "" } = useParams();
+  const locale = useSiteLocale();
   const fallbackTitle = slug
     .split("-")
     .filter(Boolean)
@@ -72,7 +72,8 @@ export function Article() {
     article?.featuredImageAlt?.trim() ||
     (article?.title ? `${article.title} — foto de capa` : "Imagem de capa da matéria");
   const bodyHtml = article?.content ? rewriteHtmlMediaUrls(article.content) : "";
-  const sharePageUrl = `${SITE_ORIGIN}/revista/${slug}`;
+  const revistaPath = withLocalePrefix(`/revista/${slug}`, locale);
+  const sharePageUrl = `${SITE_ORIGIN}${revistaPath}`;
   const trimmedPub = article?.publishedAt?.trim() ?? "";
   const publishedDateAttr = /^\d{4}-\d{2}-\d{2}/.test(trimmedPub) ? trimmedPub.slice(0, 10) : "";
   const publishedFull = formatPublicationDatePt(article?.publishedAt);
@@ -85,7 +86,7 @@ export function Article() {
         description: metaTagDescription,
         ...(article.updatedAt ? { dateModified: article.updatedAt } : {}),
         datePublished: article.publishedAt,
-        mainEntityOfPage: `/revista/${slug}`,
+        mainEntityOfPage: `${SITE_ORIGIN}${revistaPath}`,
         ...(keywords ? { keywords } : {}),
         ...(heroImage
           ? {
@@ -108,7 +109,7 @@ export function Article() {
       <Seo
         title={documentTitle}
         description={metaTagDescription}
-        canonical={`/revista/${slug}`}
+        canonical={revistaPath}
         ogImage={heroImage}
         ogTitle={article?.ogTitle ?? undefined}
         ogDescription={article?.ogDescription ?? undefined}
@@ -116,9 +117,9 @@ export function Article() {
         robots={robots}
         type="article"
         breadcrumbs={[
-          { name: "Início", url: "/" },
-          { name: "Revista", url: "/revista" },
-          { name: documentTitle, url: `/revista/${slug}` },
+          { name: "Início", url: `${SITE_ORIGIN}${withLocalePrefix("/", locale)}` },
+          { name: "Revista", url: `${SITE_ORIGIN}${withLocalePrefix("/revista", locale)}` },
+          { name: documentTitle, url: `${SITE_ORIGIN}${revistaPath}` },
         ]}
         jsonLd={structuredArticle}
       />

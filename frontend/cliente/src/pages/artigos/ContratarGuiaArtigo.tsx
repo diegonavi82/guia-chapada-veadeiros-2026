@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet-async";
-import { Link } from "react-router-dom";
+import { LangLink } from "../../i18n/LangLink";
 import { ArticleAuthorCard } from "../../components/revista/ArticleAuthorCard";
 import { ArticleShareBar } from "../../components/revista/ArticleShareBar";
 import { Seo } from "../../seo/Seo";
@@ -175,11 +175,11 @@ export function ContratarGuiaArtigo() {
       <div className="gcv-post-page">
         <div className="gcv-post-shell">
           <nav className="gcv-post-breadcrumb" aria-label="Caminho de navegação">
-            <Link to="/">Home</Link>
+            <LangLink to="/">Home</LangLink>
             <span className="sep">›</span>
-            <Link to="/revista">Revista</Link>
+            <LangLink to="/revista">Revista</LangLink>
             <span className="sep">›</span>
-            <Link to="/revista">Dicas</Link>
+            <LangLink to="/revista">Dicas</LangLink>
             <span className="sep">›</span>
             <span>Por que contratar um guia?</span>
           </nav>
@@ -194,9 +194,9 @@ export function ContratarGuiaArtigo() {
               decoding="async"
             />
             <div className="gcv-post-hero-overlay">
-              <Link to="/revista" className="gcv-post-category">
+              <LangLink to="/revista" className="gcv-post-category">
                 Dicas de viagem
-              </Link>
+              </LangLink>
               <h1>Por que é tão importante contratar um guia em passeios na natureza?</h1>
             </div>
           </header>

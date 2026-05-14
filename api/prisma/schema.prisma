@@ -18,6 +18,12 @@ enum PublishStatus {
   ARCHIVED
 }
 
+enum AppLocale {
+  pt
+  en
+  es
+}
+
 enum SeoEntityType {
   POST
   PAGE
@@ -62,10 +68,38 @@ model Post {
   author         User?         @relation(fields: [authorId], references: [id])
   categories     Category[]    @relation("PostCategories")
   tags           Tag[]         @relation("PostTags")
+  translations   PostTranslation[]
 
   @@index([slug])
   @@index([status, publishedAt])
   @@map("posts")
+}
+
+model PostTranslation {
+  id                Int       @id @default(autoincrement())
+  postId            Int       @map("post_id")
+  locale            AppLocale
+  title             String    @db.VarChar(512)
+  slug              String    @db.VarChar(320)
+  excerpt           String?   @db.Text
+  content           String    @db.LongText
+  seoTitle          String?   @map("seo_title") @db.VarChar(512)
+  seoDescription    String?   @map("seo_description") @db.Text
+  seoKeywords       String?   @map("seo_keywords") @db.Text
+  seoFocusKeyword   String?   @map("seo_focus_keyword") @db.VarChar(255)
+  ogTitle           String?   @map("og_title") @db.VarChar(512)
+  ogDescription     String?   @map("og_description") @db.Text
+  seoRobots         String?   @map("seo_robots") @db.VarChar(96)
+  featuredImageAlt  String?   @map("featured_image_alt") @db.Text
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, locale])
+  @@unique([locale, slug])
+  @@index([postId])
+  @@map("post_translations")
 }
 
 model Page {
@@ -81,9 +115,31 @@ model Page {
   publishedAt    DateTime?     @map("published_at")
   createdAt      DateTime      @default(now()) @map("created_at")
   updatedAt      DateTime      @updatedAt @map("updated_at")
+  translations   PageTranslation[]
 
   @@index([slug])
   @@map("pages")
+}
+
+model PageTranslation {
+  id              Int       @id @default(autoincrement())
+  pageId          Int       @map("page_id")
+  locale          AppLocale
+  title           String    @db.VarChar(512)
+  slug            String    @db.VarChar(320)
+  excerpt         String?   @db.Text
+  content         String    @db.LongText
+  seoTitle        String?   @map("seo_title") @db.VarChar(512)
+  seoDescription  String?   @map("seo_description") @db.Text
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@unique([pageId, locale])
+  @@unique([locale, slug])
+  @@index([pageId])
+  @@map("page_translations")
 }
 
 model Product {
@@ -101,11 +157,32 @@ model Product {
   updatedAt        DateTime      @updatedAt @map("updated_at")
   categories       Category[]    @relation("ProductCategories")
   tags             Tag[]         @relation("ProductTags")
+  translations     ProductTranslation[]
 
   @@index([slug])
   @@map("products")
 }
 
+model ProductTranslation {
+  id               Int       @id @default(autoincrement())
+  productId        Int       @map("product_id")
+  locale           AppLocale
+  title            String    @db.VarChar(512)
+  slug             String    @db.VarChar(320)
+  description      String    @db.LongText
+  shortDescription String?   @db.Text @map("short_description")
+  seoTitle         String?   @map("seo_title") @db.VarChar(512)
+  seoDescription   String?   @map("seo_description") @db.Text
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, locale])
+  @@unique([locale, slug])
+  @@index([productId])
+  @@map("product_translations")
+}
 model Category {
   id          Int       @id @default(autoincrement())
   name        String

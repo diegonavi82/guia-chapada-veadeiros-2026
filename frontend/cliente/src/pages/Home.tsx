@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Link } from "react-router-dom";
+import { LangLink } from "../i18n/LangLink";
+import { SITE_ORIGIN } from "../config/siteOrigin";
+import { useSiteLocale } from "../i18n/siteLocale";
+import { withLocalePrefix } from "../i18n/paths";
 import { WATERFALL_MAP_IMAGE_URL, waterfallMapHotspots } from "../config/waterfallMap";
 import { wpUploadsAssets as Wp } from "../config/wpUploadsAssets";
 import { WaitlistModal } from "../components/WaitlistModal";
@@ -310,6 +313,10 @@ function shuffleReviews() {
 }
 
 export function Home() {
+  const locale = useSiteLocale();
+  const homePath = withLocalePrefix("/", locale);
+  const homeUrl = `${SITE_ORIGIN}${homePath}`;
+  const searchActionTarget = `${SITE_ORIGIN}${withLocalePrefix("/busca", locale)}?q={search_term_string}`;
   const [reviewPage, setReviewPage] = useState(0);
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [waitlistOpen, setWaitlistOpen] = useState(false);
@@ -497,29 +504,29 @@ export function Home() {
       <Seo
         title="Guia Chapada Veadeiros"
         description="Cachoeiras, passeios, eventos, gastronomia, hospedagem, terapias holísticas, arte e muito mais. Um guia completo na Chapada dos Veadeiros."
-        canonical="/"
+        canonical={homePath}
         ogImage={mapImageUrl}
         jsonLd={{
           "@context": "https://schema.org",
           "@graph": [
             {
               "@type": "WebPage",
-              "@id": "/",
-              url: "/",
+              "@id": `${homeUrl}#page`,
+              url: homeUrl,
               name: "Guia Chapada Veadeiros",
               description:
                 "Cachoeiras, passeios, eventos, gastronomia, hospedagem, terapias holísticas, arte e muito mais. Um guia completo na Chapada dos Veadeiros.",
             },
             {
               "@type": "WebSite",
-              "@id": "/#website",
-              url: "/",
+              "@id": `${homeUrl}#website`,
+              url: homeUrl,
               name: "Guia Chapada Veadeiros",
               description:
                 "Cachoeiras, atrativos naturais, eventos, trilhas, hospedagem, gastronomia, lojas e muito mais sobre a Chapada dos Veadeiros.",
               potentialAction: {
                 "@type": "SearchAction",
-                target: "/busca?q={search_term_string}",
+                target: searchActionTarget,
                 "query-input": "required name=search_term_string",
               },
             },
@@ -622,13 +629,13 @@ export function Home() {
                     {heroSlide.cta.label}
                   </button>
                 ) : (
-                  <Link
+                  <LangLink
                     className="gcv-hero-line mt-5 inline-flex items-center justify-center rounded-full bg-[#e58b55] px-4 py-3 text-[10px] font-extrabold uppercase tracking-[0.08em] text-white shadow-xl shadow-orange-950/40 transition hover:bg-[#d97941] max-sm:max-w-full max-sm:break-words max-sm:text-center max-sm:[text-wrap:balance] sm:mt-7 sm:w-auto sm:px-6 sm:py-3.5 sm:text-xs sm:tracking-[0.12em] md:text-sm"
                     to={heroSlide.cta.to}
                     style={{ animationDelay: `${heroAnim.ctaStartMs}ms` }}
                   >
                     {heroSlide.cta.label}
-                  </Link>
+                  </LangLink>
                 )}
               </div>
             </div>
@@ -665,17 +672,17 @@ export function Home() {
                   Cachoeiras e trilhas mais buscadas
                 </h2>
               </div>
-              <Link
+              <LangLink
                 className="shrink-0 text-xs font-extrabold uppercase tracking-[0.12em] text-cerrado-700 transition hover:text-[#df8350]"
                 to="/atrativos"
               >
                 Ver Todas
-              </Link>
+              </LangLink>
             </div>
 
             <div className="mt-6 grid gap-4 md:grid-cols-4">
               {featuredAttractions.map((item) => (
-                <Link
+                <LangLink
                   key={item.href}
                   to={item.href}
                   className="group relative h-72 overflow-hidden rounded-2xl bg-slate-900 shadow-lg ring-1 ring-black/5 transition hover:shadow-2xl"
@@ -696,7 +703,7 @@ export function Home() {
                   <p className="gcv-card-photo-text absolute bottom-2 left-4 right-4 text-[11px] font-semibold uppercase tracking-[0.06em] text-white/85">
                     {item.meta}
                   </p>
-                </Link>
+                </LangLink>
               ))}
             </div>
           </section>
@@ -711,12 +718,12 @@ export function Home() {
                   Últimas notícias da Chapada dos Veadeiros
                 </h2>
               </div>
-              <Link
+              <LangLink
                 className="shrink-0 text-xs font-extrabold uppercase tracking-[0.12em] text-cerrado-700 transition hover:text-[#df8350]"
                 to="/revista"
               >
                 Ver tudo
-              </Link>
+              </LangLink>
             </div>
             {revistaLoading ? <p className="mt-6 text-sm text-slate-600">Carregando matérias…</p> : null}
             {revistaError ? <p className="mt-6 text-sm text-amber-800">{revistaError}</p> : null}
@@ -776,7 +783,7 @@ export function Home() {
                       <img src={mapImageUrl} alt="Mapa de cachoeiras da Chapada dos Veadeiros" />
                       <div className="gcv-map-lightbox__hotspots">
                         {waterfallMapHotspots.map((spot) => (
-                          <Link
+                          <LangLink
                             key={spot.href}
                             aria-label={spot.label}
                             className="gcv-map-lightbox__hotspot"

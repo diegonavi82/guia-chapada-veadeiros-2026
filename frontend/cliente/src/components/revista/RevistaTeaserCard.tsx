@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { LangLink } from "../../i18n/LangLink";
 import { revistaListOverridesBySlug } from "../../config/wpUploadsAssets";
 import type { RevistaTeaserPost } from "./types";
 import { formatPublicationDatePt } from "../../utils/formatPublicationDatePt";
@@ -24,7 +24,7 @@ export function RevistaTeaserCard({
 
   if (variant === "capa") {
     return (
-      <Link to={`/revista/${post.slug}`} className="group Revista-teaser Revista-teaser--capa">
+      <LangLink to={`/revista/${post.slug}`} className="group Revista-teaser Revista-teaser--capa">
         <div className="Revista-teaser__media Revista-teaser__media--wide">
           {img ? (
                 <img src={img} alt={title} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]" loading="lazy" />
@@ -40,7 +40,7 @@ export function RevistaTeaserCard({
           {dek ? <p className="Revista-teaser__dek">{dek}</p> : null}
           {dateLabel ? <p className="Revista-teaser__meta">{dateLabel}</p> : null}
         </div>
-      </Link>
+      </LangLink>
     );
   }
 
@@ -52,7 +52,7 @@ export function RevistaTeaserCard({
         : "Revista-teaser__title-sm";
 
   return (
-    <Link to={`/revista/${post.slug}`} className={`group Revista-teaser Revista-teaser--${variant}`}>
+    <LangLink to={`/revista/${post.slug}`} className={`group Revista-teaser Revista-teaser--${variant}`}>
       {img ? (
         <div className="Revista-teaser__media">
           <img src={img} alt={title} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" loading="lazy" />
@@ -66,6 +66,6 @@ export function RevistaTeaserCard({
         {variant !== "compacto" && dek ? <p className="Revista-teaser__dek Revista-teaser__dek--short">{dek}</p> : null}
         {dateLabel ? <p className="Revista-teaser__meta">{dateLabel}</p> : null}
       </div>
-    </Link>
+    </LangLink>
   );
 }

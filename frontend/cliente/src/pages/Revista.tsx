@@ -5,10 +5,13 @@ import { REVISTA_FALLBACK_POSTS } from "../data/revistaFallbackPosts";
 import { mergeRevistaTeaserPosts } from "../data/mergeRevistaTeaserPosts";
 import { RevistaListing } from "../components/revista/RevistaListing";
 import type { RevistaTeaserPost } from "../components/revista/types";
+import { useSiteLocale } from "../i18n/siteLocale";
+import { withLocalePrefix } from "../i18n/paths";
 
 const REVISTA_LIST_PER_PAGE = 24;
 
 export function Revista() {
+  const locale = useSiteLocale();
   const [page, setPage] = useState(1);
   const [posts, setPosts] = useState<RevistaTeaserPost[]>([]);
   const [total, setTotal] = useState(0);
@@ -64,7 +67,7 @@ export function Revista() {
       <Seo
         title="Revista Chapada dos Veadeiros"
         description="Notícias, roteiros, natureza e cultura na Chapada dos Veadeiros — matérias atualizadas do Guia Chapada."
-        canonical="/revista"
+        canonical={withLocalePrefix("/revista", locale)}
         keywords="Chapada dos Veadeiros, notícias, ecoturismo, cachoeiras, alto paraíso, são jorge, revista chapada"
       />
       <header className="Revista-masthead">

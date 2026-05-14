@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { LangLink } from "../i18n/LangLink";
+import { useSiteLocale } from "../i18n/siteLocale";
+import { withLocalePrefix } from "../i18n/paths";
 import { WaterfallRegionMap } from "../components/WaterfallRegionMap";
 import { pageSlugHasWaterfallMap } from "../config/waterfallMap";
 import { detailImageByPageSlug, wpUploadsAssets } from "../config/wpUploadsAssets";
 import { Seo } from "../seo/Seo";
 import { apiGet } from "../services/api";
 import { toPublicAssetUrl } from "../utils/localMediaUrl";
-
 type CatalogPage = {
   slug: string;
   title: string;
@@ -52,6 +53,7 @@ function sortCards(items: CardItem[]) {
 }
 
 export function Attractions() {
+  const locale = useSiteLocale();
   const [payload, setPayload] = useState<CatalogPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -87,7 +89,7 @@ export function Attractions() {
       <Seo
         title="Atrativos | Guia Chapada Veadeiros"
         description="Cachoeiras, trilhas e mirantes do mapa oficial da Chapada dos Veadeiros."
-        canonical="/atrativos"
+        canonical={withLocalePrefix("/atrativos", locale)}
       />
       <section className="official-home-shell px-4 pb-16 pt-9">
         <div className="mx-auto max-w-[1180px]">
@@ -118,7 +120,7 @@ export function Attractions() {
             {payload && !error ? (
               <div className="mt-8 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {visibleCards.map((item) => (
-                  <Link
+                  <LangLink
                     key={item.slug}
                     to={item.href}
                     className="group relative h-72 overflow-hidden rounded-2xl bg-slate-900 shadow-lg ring-1 ring-black/5 transition hover:shadow-2xl"
@@ -146,7 +148,7 @@ export function Attractions() {
                     <p className="gcv-card-photo-text absolute bottom-2 left-4 right-4 line-clamp-2 text-[10px] font-semibold uppercase tracking-[0.06em] text-white/85 sm:text-[11px]">
                       {item.meta}
                     </p>
-                  </Link>
+                  </LangLink>
                 ))}
               </div>
             ) : null}

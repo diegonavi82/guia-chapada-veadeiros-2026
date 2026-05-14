@@ -23,7 +23,7 @@ export const REVISTA_FALLBACK_POSTS: RevistaTeaserPost[] = [
     title: "Matéria no site (sem API)",
     slug: "contratar-guia-local-chapada-veadeiros",
     excerpt:
-      "Segurança, fotos marcantes e aproveitamento total: porque um guia credenciado na Chapada dos Veadeiros vale a pena.",
+      "Aproveite mais, preocupe-se menos e viva experiências inesquecíveis com segurança",
     featuredImage: null,
     seoDescription:
       "Riscos reais sem guia, benefícios de um condutor local e registos fotográficos — matéria completa no próprio frontend.",
