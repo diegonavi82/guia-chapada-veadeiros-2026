@@ -32,6 +32,22 @@
     "mainNavAria": "Navegação principal",
     "searchAria": "Busca"
   },
+  "hero": {
+    "slide1": {
+      "badge": "Chapada dos Veadeiros",
+      "title": "Passeios com guias locais",
+      "lead": "Contamos com uma equipe de guias parceiros na Chapada dos Veadeiros para realização de passeios exclusivos ou em excursões com grupos diversos",
+      "sub": "Faça seu roteiro ou entre na próxima excursão",
+      "ctaWhatsApp": "Whatsapp"
+    },
+    "slide2": {
+      "badge": "Em breve",
+      "title": "Seu próximo destino começa aqui",
+      "lead": "Em breve iniciaremos a plataforma de vendas online para você escolher seu próprio roteiro, num fluxo digital limpo, seguro e pensado para quem viaja com excelência.",
+      "sub": "Seja avisado em primeira mão quando abrirmos as reservas e garanta prioridade para montar seu roteiro",
+      "ctaWaitlist": "Quero entrar na lista"
+    }
+  },
   "static": {
     "faq": {
       "title": "FAQ",

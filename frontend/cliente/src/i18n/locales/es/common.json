@@ -32,6 +32,22 @@
     "mainNavAria": "Navegación principal",
     "searchAria": "Buscar"
   },
+  "hero": {
+    "slide1": {
+      "badge": "Chapada dos Veadeiros",
+      "title": "Excursiones con guías locales",
+      "lead": "Trabajamos con guías asociados en la Chapada dos Veadeiros para salidas exclusivas o excursiones en grupos variados.",
+      "sub": "Organiza tu ruta o únete a la próxima excursión",
+      "ctaWhatsApp": "WhatsApp"
+    },
+    "slide2": {
+      "badge": "Próximamente",
+      "title": "Tu próximo destino empieza aquí",
+      "lead": "Pronto lanzaremos la plataforma de venta online para que elijas tu propio itinerario, con un flujo digital limpio, seguro y pensado para quien viaja con excelencia.",
+      "sub": "Entérate en primicia cuando abramos reservas y ten prioridad para armar tu viaje",
+      "ctaWaitlist": "Quiero entrar en la lista"
+    }
+  },
   "static": {
     "faq": {
       "title": "FAQ",

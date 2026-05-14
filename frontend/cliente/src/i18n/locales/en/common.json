@@ -32,6 +32,22 @@
     "mainNavAria": "Main navigation",
     "searchAria": "Search"
   },
+  "hero": {
+    "slide1": {
+      "badge": "Chapada dos Veadeiros",
+      "title": "Tours with local guides",
+      "lead": "We work with partner guides across Chapada dos Veadeiros for exclusive outings or mixed-group excursions.",
+      "sub": "Plan your route or join the next group trip",
+      "ctaWhatsApp": "WhatsApp"
+    },
+    "slide2": {
+      "badge": "Coming soon",
+      "title": "Your next destination starts here",
+      "lead": "Soon we’ll launch online booking so you can choose your own itinerary—clean, secure digital flow built for quality travel.",
+      "sub": "Be the first to know when reservations open and get priority to build your trip",
+      "ctaWaitlist": "Join the waitlist"
+    }
+  },
   "static": {
     "faq": {
       "title": "FAQ",

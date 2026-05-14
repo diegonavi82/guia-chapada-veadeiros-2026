@@ -24,18 +24,23 @@ export async function buildApp() {
   });
 
   await app.register(sensible);
+
   await app.register(helmet);
+
   await app.register(cors, {
     origin: corsOrigins,
     credentials: true,
   });
+
   await app.register(rateLimit, {
     max: 120,
     timeWindow: "1 minute",
   });
+
   await app.register(jwt, {
     secret: env.JWT_SECRET,
   });
+
   await app.register(multipart, {
     limits: {
       fileSize: 12 * 1024 * 1024,
@@ -52,17 +57,44 @@ export async function buildApp() {
       });
     }
 
-    const sc = typeof (error as { statusCode?: unknown }).statusCode === "number" ? (error as { statusCode: number }).statusCode : undefined;
-    if (typeof sc === "number" && sc >= 400 && sc < 600 && error instanceof Error) {
+    const sc =
+      typeof (error as { statusCode?: unknown }).statusCode === "number"
+        ? (error as { statusCode: number }).statusCode
+        : undefined;
+
+    if (
+      typeof sc === "number" &&
+      sc >= 400 &&
+      sc < 600 &&
+      error instanceof Error
+    ) {
       request.log.warn({ err: error, statusCode: sc }, "request error");
-      return reply.status(sc).send({ message: error.message });
+
+      return reply.status(sc).send({
+        message: error.message,
+      });
     }
 
     return reply.send(error);
   });
 
-  await app.register(publicRoutes, { prefix: "/api" });
-  await app.register(adminRoutes, { prefix: "/api/admin" });
+  // HEALTH CHECK
+  app.get("/", async () => {
+    return { ok: true };
+  });
+
+  app.get("/health", async () => {
+    return { status: "online" };
+  });
+
+  // ROUTES
+  await app.register(publicRoutes, {
+    prefix: "/api",
+  });
+
+  await app.register(adminRoutes, {
+    prefix: "/api/admin",
+  });
 
   return app;
 }

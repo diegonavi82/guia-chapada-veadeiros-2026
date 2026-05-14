@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { LangLink } from "../i18n/LangLink";
@@ -33,33 +34,12 @@ type HeroSlideCopy = {
 
 type HeroSlide = HeroSlideCopy & { image: string };
 
-/** Apenas dois slides principais: guias locais · em breve plataforma. */
-const HERO_SLIDES: HeroSlide[] = [
-  {
-    image: Wp.heroSlideGuiasLocais,
-    badge: "Chapada dos Veadeiros",
-    title: "Passeios com guias locais",
-    lead:
-      "Contamos com uma equipe de guias parceiros na Chapada dos Veadeiros para realização de passeios exclusivos ou em excursões com grupos diversos",
-    sub: "Faça seu roteiro ou entre na próxima excursão",
-    cta: { kind: "whatsapp", label: "Whatsapp" },
-  },
-  {
-    image: Wp.heroSlideEmBreve,
-    badge: "Em breve",
-    title: "Seu próximo destino começará aqui",
-    lead:
-      "Em breve iniciaremos a plataforma de vendas online para você escolher seu próprio roteiro, num fluxo digital limpo, seguro e pensado para quem viaja com excelência.",
-    sub: "Seja avisado em primeira mão quando abrirmos as reservas e garanta prioridade para montar seu roteiro",
-    cta: { kind: "waitlist", label: "Quero entrar na lista" },
-  },
-];
-
+const HERO_SLIDE_COUNT = 2;
 const HERO_DRAG_THRESHOLD_PX = 52;
 const HERO_DRAG_LOCK_MIN_PX = 14;
 
-function pickRandomHeroSlideIndex() {
-  return Math.floor(Math.random() * HERO_SLIDES.length);
+function pickRandomHeroSlideIndex(length: number) {
+  return Math.floor(Math.random() * length);
 }
 
 const HERO_TITLE_STEP_MS = 72;
@@ -317,6 +297,28 @@ export function Home() {
   const homePath = withLocalePrefix("/", locale);
   const homeUrl = `${SITE_ORIGIN}${homePath}`;
   const searchActionTarget = `${SITE_ORIGIN}${withLocalePrefix("/busca", locale)}?q={search_term_string}`;
+  const { t } = useTranslation();
+  const heroSlides = useMemo(
+    (): HeroSlide[] => [
+      {
+        image: Wp.heroSlideGuiasLocais,
+        badge: t("hero.slide1.badge"),
+        title: t("hero.slide1.title"),
+        lead: t("hero.slide1.lead"),
+        sub: t("hero.slide1.sub"),
+        cta: { kind: "whatsapp", label: t("hero.slide1.ctaWhatsApp") },
+      },
+      {
+        image: Wp.heroSlideEmBreve,
+        badge: t("hero.slide2.badge"),
+        title: t("hero.slide2.title"),
+        lead: t("hero.slide2.lead"),
+        sub: t("hero.slide2.sub"),
+        cta: { kind: "waitlist", label: t("hero.slide2.ctaWaitlist") },
+      },
+    ],
+    [t],
+  );
   const [reviewPage, setReviewPage] = useState(0);
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [waitlistOpen, setWaitlistOpen] = useState(false);
@@ -326,7 +328,7 @@ export function Home() {
   const [revistaLatest, setRevistaLatest] = useState<RevistaTeaserPost[]>([]);
   const [revistaLoading, setRevistaLoading] = useState(true);
   const [revistaError, setRevistaError] = useState<string | null>(null);
-  const [heroImageIndex, setHeroImageIndex] = useState(() => pickRandomHeroSlideIndex());
+  const [heroImageIndex, setHeroImageIndex] = useState(() => pickRandomHeroSlideIndex(HERO_SLIDE_COUNT));
   const heroPointerDragRef = useRef({ pointerId: -1, startX: 0, locked: false });
   const shuffledReviews = useMemo(() => shuffleReviews(), []);
   const totalReviewPages = Math.ceil(shuffledReviews.length / reviewsPerPage);
@@ -428,11 +430,11 @@ export function Home() {
   }
 
   function goToPreviousHeroImage() {
-    setHeroImageIndex((index) => (index - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
+    setHeroImageIndex((index) => (index - 1 + heroSlides.length) % heroSlides.length);
   }
 
   function goToNextHeroImage() {
-    setHeroImageIndex((index) => (index + 1) % HERO_SLIDES.length);
+    setHeroImageIndex((index) => (index + 1) % heroSlides.length);
   }
 
   function handleHeroPointerDown(event: React.PointerEvent<HTMLDivElement>) {
@@ -489,7 +491,7 @@ export function Home() {
     }
   }
 
-  const heroSlide = HERO_SLIDES[heroImageIndex];
+  const heroSlide = heroSlides[heroImageIndex];
   const heroAnim = useMemo(
     () => buildHeroAnim(heroSlide.title, heroSlide.lead, heroSlide.sub),
     [heroSlide.title, heroSlide.lead, heroSlide.sub],
@@ -539,7 +541,7 @@ export function Home() {
             className="relative w-full cursor-grab touch-pan-y overflow-hidden rounded-[1.8rem] bg-[#0f2420] shadow-2xl active:cursor-grabbing max-sm:aspect-none max-sm:min-h-[460px] sm:aspect-video sm:min-h-[340px]"
             role="region"
             aria-roledescription="Carrossel"
-            aria-label={`Destaque ${heroImageIndex + 1} de ${HERO_SLIDES.length}`}
+            aria-label={`Destaque ${heroImageIndex + 1} de ${heroSlides.length}`}
             onPointerCancel={handleHeroPointerEnd}
             onPointerDown={handleHeroPointerDown}
             onPointerMove={handleHeroPointerMove}
@@ -644,13 +646,13 @@ export function Home() {
               role="tablist"
               aria-label="Navegação dos destaques"
             >
-              {HERO_SLIDES.map((_, index) => (
+              {heroSlides.map((_, index) => (
                 <button
                   key={index}
                   type="button"
                   role="tab"
                   aria-selected={index === heroImageIndex}
-                  aria-label={`Destaque ${index + 1} de ${HERO_SLIDES.length}`}
+                  aria-label={`Destaque ${index + 1} de ${heroSlides.length}`}
                   className={
                     index === heroImageIndex
                       ? "mx-1.5 h-2 w-10 shrink-0 rounded-full bg-white shadow-sm transition-all duration-300 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
@@ -711,10 +713,7 @@ export function Home() {
           <section className="mt-10 rounded-[1.75rem] border border-white/40 bg-white/90 p-5 shadow-xl shadow-slate-400/15 backdrop-blur-sm md:p-8">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <span className="inline-flex rounded-full bg-[#e58b55] px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-white sm:text-[11px]">
-                  Revista da Chapada dos Veadeiros
-                </span>
-                <h2 className="mt-3 max-w-full text-balance text-[clamp(1.12rem,4.05vw,1.36rem)] font-black leading-[1.15] text-slate-900 sm:max-w-none sm:text-2xl md:text-4xl">
+                <h2 className="max-w-full text-balance text-[clamp(1.12rem,4.05vw,1.36rem)] font-black leading-[1.15] text-slate-900 sm:max-w-none sm:text-2xl md:text-4xl">
                   Últimas notícias da Chapada dos Veadeiros
                 </h2>
               </div>
