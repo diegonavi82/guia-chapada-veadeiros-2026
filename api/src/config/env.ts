@@ -23,7 +23,7 @@ const envSchema = z.object({
   R2_SECRET_ACCESS_KEY: z.string().min(1),
   INSTAGRAM_ACCESS_TOKEN: z.string().optional(),
   INSTAGRAM_BUSINESS_ACCOUNT_ID: z.string().optional(),
-  /** Contato — e-mail via Resend (https://resend.com) */
+  /** Contato — email via Resend (https://resend.com) */
   CONTACT_RESEND_API_KEY: z.string().optional(),
   CONTACT_FROM_EMAIL: z.string().email().optional(),
   CONTACT_TO_EMAIL: z.string().email().default("contato@guiachapadaveadeiros.com"),

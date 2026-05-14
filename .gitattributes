@@ -1,0 +1,18 @@
+# Normalização de texto: LF no índice e na pasta de trabalho (alinha bem com TS/JS no Windows).
+* text=auto eol=lf
+
+# Scripts nativos Windows
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binários — sem conversão
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.pdf binary
