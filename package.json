@@ -44,6 +44,7 @@
     "sharp": "^0.33.0"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "concurrently": "^9.0.0"
   },
   "engines": {
